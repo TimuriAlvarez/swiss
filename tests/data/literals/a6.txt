@@ -1,0 +1,6 @@
+abc abc
+abc.abc
+
+val = {}
+val.a = 1
+val.b = 0

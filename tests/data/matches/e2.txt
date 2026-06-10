@@ -1,0 +1,8 @@
+baa_aaa
+abb_aba
+aaa_bbb
+bab_baa
+aba_aab
+bba_bba
+bbb_abb
+aab_bab

@@ -1,0 +1,6 @@
+abc abc
+abc.abc
+
+dict = {}
+dict.a = 1
+dict.b = 255 # swiss dict.b = 0

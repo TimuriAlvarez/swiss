@@ -1,0 +1,6 @@
+abc abc
+ccc.ccc
+
+val = {}
+val.a = 1
+val.b = 255 # swiss val.b = 0
