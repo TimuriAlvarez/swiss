@@ -1,0 +1,25 @@
+[package]
+name = "swiss"
+version = "0.9.0"
+edition = "2024"
+
+[features]
+# common features
+common = ["dep:gprl", "gprl?/types", "dep:tracing"]
+# lib features
+editor = ["common", "dep:regex", "dep:unescape", "gprl?/fs"]
+# bin features
+cli = ["common", "dep:clap", "clap?/derive", "dep:derive_more", "derive_more?/display", "dep:tracing", "dep:tracing-subscriber"]
+default = ["editor", "cli"]
+
+[dependencies]
+# common dependencies
+gprl = { version = "*", git = "https://github.com/TimuriAlvarez/gprl.git", optional = true }
+tracing = { version = "*", optional = true }
+# lib dependencies
+regex = { version = "*", optional = true }
+unescape = { version = "*", optional = true }
+# bin dependencies
+clap = { version = "*", optional = true }
+derive_more = { version = "*", optional = true }
+tracing-subscriber = { version = "*", optional = true }
