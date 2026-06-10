@@ -30,9 +30,9 @@ pub fn presenter(book: &Option<String>) -> Res::<ViewModel> {
   };
   if let Some(book) = book {
     res.name = book.to_string();
-    res.version = format!("evaluate . version");
-    res.description = format!("evaluate . description");
-    res.repository = format!("evaluate . repository");
+    res.version = format!("version");
+    res.description = format!("description");
+    res.repository = format!("repository");
     res.list = VMList {
       header: "Available recipes".to_string(),
       list: vec![format!("run . recipes")],

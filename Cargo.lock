@@ -469,6 +469,7 @@ dependencies = [
  "gprl",
  "lexical-sort",
  "regex",
+ "temp-file",
  "tracing",
  "tracing-subscriber",
  "unescape",
@@ -485,6 +486,12 @@ dependencies = [
  "quote",
  "unicode-ident",
 ]
+
+[[package]]
+name = "temp-file"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e08eac0f10a143ffa8883ff5964642eef36d867436cc389812c32790c778105f"
 
 [[package]]
 name = "thread_local"

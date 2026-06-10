@@ -11,10 +11,10 @@ common = ["dep:gprl", "gprl?/types", "dep:tracing"]
 # lib features
 editor = ["common", "dep:regex", "dep:unescape", "gprl?/fs"]
 xdg = ["common", "dep:xdg", "dep:dirwalk", "dep:lexical-sort"]
-viewer = ["common", "xdg"]
+runner = ["common", "xdg", "dep:temp-file"]
 # bin features
 cli = ["common", "dep:clap", "clap?/derive", "dep:derive_more", "derive_more?/display", "dep:tracing", "dep:tracing-subscriber"]
-default = ["cli", "editor", "viewer"]
+default = ["cli", "editor", "runner"]
 
 [dependencies]
 # common dependencies
@@ -26,6 +26,7 @@ unescape = { version = "*", optional = true }
 xdg = { version = "*", optional = true }
 dirwalk = { version = "*", optional = true }
 lexical-sort = { version = "*", optional = true }
+temp-file = { version = "*", optional = true }
 # bin dependencies
 clap = { version = "*", optional = true }
 derive_more = { version = "*", optional = true }

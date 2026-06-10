@@ -19,3 +19,14 @@ pub fn books() -> Res::<Vec::<String>> {
   books.string_sort(lexical_sort::natural_lexical_cmp);
   Ok(books)
 }
+
+pub fn book(book: &String) -> Result::<String, std::io::Error> {
+  std::fs::read_to_string(data_path("books")?.join(format!("{book}.{EXTENSION}")))
+}
+
+pub fn expand(text: &String) -> String {
+  let common: &str = include_str!("../resources/common.justfile").trim();
+  let conditions: &str = include_str!("../resources/conditions.justfile").trim();
+  let lists: &str = include_str!("../resources/lists.justfile").trim();
+  format!("{}\n", [text.as_str(), common, conditions, lists].join("\n\n"))
+}
