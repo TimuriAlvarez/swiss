@@ -2,15 +2,19 @@
 name = "swiss"
 version = "0.9.0"
 edition = "2024"
+description = "🐺 Just a script manager - https://github.com/TimuriAlvarez/swiss"
+repository = "https://github.com/TimuriAlvarez/swiss"
 
 [features]
 # common features
 common = ["dep:gprl", "gprl?/types", "dep:tracing"]
 # lib features
 editor = ["common", "dep:regex", "dep:unescape", "gprl?/fs"]
+xdg = ["common", "dep:xdg", "dep:dirwalk", "dep:lexical-sort"]
+viewer = ["common", "xdg"]
 # bin features
 cli = ["common", "dep:clap", "clap?/derive", "dep:derive_more", "derive_more?/display", "dep:tracing", "dep:tracing-subscriber"]
-default = ["editor", "cli"]
+default = ["cli", "editor", "viewer"]
 
 [dependencies]
 # common dependencies
@@ -19,6 +23,9 @@ tracing = { version = "*", optional = true }
 # lib dependencies
 regex = { version = "*", optional = true }
 unescape = { version = "*", optional = true }
+xdg = { version = "*", optional = true }
+dirwalk = { version = "*", optional = true }
+lexical-sort = { version = "*", optional = true }
 # bin dependencies
 clap = { version = "*", optional = true }
 derive_more = { version = "*", optional = true }
