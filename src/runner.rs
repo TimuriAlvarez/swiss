@@ -5,6 +5,7 @@ use tracing::{event, Level};
 pub enum Program {
   Just,
   Glow,
+  More,
 }
 
 pub fn spawn(command: &mut std::process::Command) -> Result::<(std::process::ExitStatus, Option::<String>), std::io::Error> {
