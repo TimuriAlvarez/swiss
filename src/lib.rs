@@ -11,4 +11,4 @@ pub mod viewer;
 pub mod runner;
 
 #[cfg(feature = "runner")]
-pub mod trust_agent;
+pub mod trusted_agent;

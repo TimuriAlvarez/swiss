@@ -12,6 +12,6 @@ fn confirm_book_execution() -> Res::<bool> {
 }
 
 pub fn confirm(book: &String, text: &String) -> Res::<bool> {
-  event!(Level::WARN, "Running {book:?}\n{text}");
+  event!(Level::WARN, ":: trusted-agent is running {book:?} book:\n{text}");
   confirm_book_execution()
 }
