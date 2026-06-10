@@ -7,8 +7,12 @@ pub enum Program {
   Glow,
 }
 
-pub fn spawn(command: &mut std::process::Command) -> Result::<(std::process::ExitStatus, Option::<String>), std::io::Error>{
+pub fn spawn(command: &mut std::process::Command) -> Result::<(std::process::ExitStatus, Option::<String>), std::io::Error> {
   command.spawn()?.wait().map(|status: std::process::ExitStatus| (status, None))
+}
+
+pub fn output(command: &mut std::process::Command) -> Result::<(std::process::ExitStatus, Option::<String>), std::io::Error> {
+  command.output().map(|output: std::process::Output| (output.status, Some(String::from_utf8(output.stdout).expect("Failed to parse stdout"))))
 }
 
 fn reduce(program: Program, c: Result::<(std::process::ExitStatus, Option::<String>), std::io::Error>) -> Result::<Option::<String>, std::io::Error> {
@@ -27,4 +31,8 @@ pub fn run(program: Program, prefix: &[&str], temp_file: Option::<String>, args:
   temp_file.is_some().then(|| { command.arg(tf.path()); });
   args.into_iter().for_each(|arg| { command.arg(arg); });
   reduce(program, f(&mut command))
+}
+
+pub fn check(program: Program) -> bool {
+  run(program, &["--version"], None, &[], output).is_ok()
 }

@@ -1,5 +1,6 @@
 use gprl::types::Res;
 use std::io::Write;
+use crate::runner::{Program::Glow, spawn};
 use tracing::{event, Level};
 
 fn confirm_book_execution() -> Res::<bool> {
@@ -11,7 +12,11 @@ fn confirm_book_execution() -> Res::<bool> {
   Ok(input == "" || input == "y")
 }
 
-pub fn confirm(book: &String, text: &String) -> Res::<bool> {
-  event!(Level::WARN, ":: trusted-agent is running {book:?} book:\n{text}");
+pub fn confirm(_book: &String, text: &String) -> Res::<bool> {
+  if crate::runner::check(Glow) {
+    crate::runner::run(Glow, &["--tui"], Some(format!("```justfile\n{text}\n```\n")), &[], spawn)?;
+  } else {
+    event!(Level::ERROR, ":: {Glow} app is not installed");
+  }
   confirm_book_execution()
 }
