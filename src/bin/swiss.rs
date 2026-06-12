@@ -1,5 +1,6 @@
 use gprl::types::Res;
 use clap::{Parser, ValueEnum};
+use swiss::runner::{spawn, Program::Just};
 use tracing::{event, Level};
 
 #[derive(ValueEnum, Clone, derive_more::Display)]
@@ -35,8 +36,7 @@ fn run(book: &String, args: &[String]) -> Res {
     return Ok(())
   }
   let text: String = swiss::xdg::expand(&text);
-  swiss::runner::run(swiss::runner::Program::Just, &["--justfile"], Some(text), args, swiss::runner::spawn)?;
-  Ok(())
+  swiss::runner::run(spawn, Just, &["--justfile"], Some(text), args).map(|_| ())
 }
 
 fn main() -> Res {

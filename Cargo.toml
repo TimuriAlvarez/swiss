@@ -1,6 +1,6 @@
 [package]
 name = "swiss"
-version = "0.9.0"
+version = "0.10.0"
 edition = "2024"
 description = "🐺 Just a script manager - https://github.com/TimuriAlvarez/swiss"
 repository = "https://github.com/TimuriAlvarez/swiss"

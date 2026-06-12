@@ -1,4 +1,5 @@
 use gprl::types::Res;
+use crate::runner::{output, Program::Just};
 
 #[derive(Debug)]
 pub struct VMList {
@@ -16,6 +17,12 @@ pub struct ViewModel {
   pub list: VMList,
 }
 
+fn evaluate(book: &String, variable: &str) -> Res::<String> {
+  let text: String = crate::xdg::book(book)?;
+  let text: String = crate::xdg::expand(&text);
+  crate::runner::run(output, Just, &["--justfile"], Some(text), &["--evaluate".to_string(), variable.to_string()])
+}
+
 pub fn presenter(book: &Option<String>) -> Res::<ViewModel> {
   let mut res: ViewModel = ViewModel {
     name: env!("CARGO_PKG_NAME").to_string(),
@@ -30,9 +37,9 @@ pub fn presenter(book: &Option<String>) -> Res::<ViewModel> {
   };
   if let Some(book) = book {
     res.name = book.to_string();
-    res.version = format!("version");
-    res.description = format!("description");
-    res.repository = format!("repository");
+    res.version = evaluate(book, "version")?;
+    res.description = evaluate(book, "description")?;
+    res.repository = evaluate(book, "repository")?;
     res.list = VMList {
       header: "Available recipes".to_string(),
       list: vec![format!("run . recipes")],

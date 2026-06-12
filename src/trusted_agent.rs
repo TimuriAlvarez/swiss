@@ -1,6 +1,6 @@
 use gprl::types::Res;
 use std::io::Write;
-use crate::runner::{Program::Glow, Program::More, spawn};
+use crate::runner::{spawn, Program::Glow, Program::More};
 use tracing::{event, Level};
 
 fn confirm_book_execution() -> Res::<bool> {
@@ -12,17 +12,15 @@ fn confirm_book_execution() -> Res::<bool> {
   Ok(input == "" || input == "y")
 }
 
+fn display_book_script(text: &String) {
+  if crate::runner::run(spawn, Glow, &["--tui"], Some(format!("```justfile\n{text}\n```\n")), &[]).is_ok() { return }
+  event!(Level::WARN, "Missing '{Glow}' executable, falling back to '{More}'");
+  if crate::runner::run(spawn, More, &["--silent", "--clean-print"], Some(text.to_string()), &[]).is_ok() { return }
+  event!(Level::WARN, "Missing '{More}' executable, falling back to 'stdout'");
+  println!("{text}");
+}
+
 pub fn confirm(_book: &String, text: &String) -> Res::<bool> {
-  if crate::runner::check(Glow) {
-    crate::runner::run(Glow, &["--tui"], Some(format!("```justfile\n{text}\n```\n")), &[], spawn)?;
-  } else {
-    event!(Level::ERROR, ":: {Glow} app is not installed, forwarding to {More} app");
-    if crate::runner::check(More) {
-      crate::runner::run(More, &["--silent", "--clean-print"], Some(text.to_string()), &[], spawn)?;
-    } else {
-      event!(Level::ERROR, ":: {More} app is not installed, forwarding to stdout");
-      println!("{text}");
-    }
-  }
+  display_book_script(text);
   confirm_book_execution()
 }
