@@ -22,10 +22,10 @@ pub fn spawn(mut command: std::process::Command) -> std::io::Result::<std::proce
   })
 }
 
-pub fn run (f: impl Fn(std::process::Command) -> std::io::Result::<std::process::Output>, program: Program, c_args: &[&str], temp_file: Option::<String>, args: &[String]) -> Res::<String> {
+pub fn runner<'a>(f: impl Fn(std::process::Command) -> std::io::Result::<std::process::Output>, program: Program, c_args: &[&str], temp_file: Option::<&'a String>, args: &[String]) -> Res::<String> {
   let mut command = std::process::Command::new(program.to_string());
   c_args.into_iter().for_each(|arg: &&str| { command.arg(arg); });
-  let file: temp_file::TempFile = temp_file::with_contents(&temp_file.clone().unwrap_or_default().into_bytes());
+  let file: temp_file::TempFile = temp_file::with_contents(&temp_file.unwrap_or(&String::new()).clone().into_bytes());
   if temp_file.is_some() {
     command.arg(file.path());
   }

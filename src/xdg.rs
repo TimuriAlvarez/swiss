@@ -8,7 +8,7 @@ use lexical_sort::StringSort;
 
 pub const EXTENSION: &str = "justfile";
 
-pub fn books() -> Res::<Vec::<String>> {
+pub fn books() -> Res::<String> {
   let entries: Vec::<dirwalk::Entry> = dirwalk::WalkBuilder::new(data_path("books")?).build()?.entries;
   let mut books: Vec::<String> = vec![];
   for entry in entries {
@@ -17,7 +17,7 @@ pub fn books() -> Res::<Vec::<String>> {
     }
   }
   books.string_sort(lexical_sort::natural_lexical_cmp);
-  Ok(books)
+  Ok(books.join("\n"))
 }
 
 pub fn book(book: &String) -> Result::<String, std::io::Error> {
