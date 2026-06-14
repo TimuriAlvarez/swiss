@@ -15,7 +15,7 @@ pub enum EditorMode {
 pub struct CLI {
   /// Log level
   #[arg(long="log-level", default_value="info")]
-  level: tracing::Level,
+  filter: tracing::Level,
   /// Recipe book's name
   #[arg(allow_hyphen_values=true)]
   book: Option::<String>,
@@ -26,16 +26,17 @@ pub struct CLI {
 
 fn run(book: &String, args: &[String]) -> Res {
   let text: String = swiss::xdg::book(book)?;
-  if !swiss::trusted_agent::confirm(book, &text)? {
-    return Ok(())
-  }
+  let temp_file: temp_file::TempFile = temp_file::TempFile::with_suffix(".justfile")?.with_contents(&text.into_bytes())?;
+  if !swiss::trusted_agent::confirm(book, &temp_file)? { return Ok(()) }
+  let text: String = std::fs::read_to_string(&temp_file)?;
   let text: String = swiss::xdg::expand(&text);
-  swiss::runner::runner(spawn, Just, &["--justfile"], Some(&text), args).map(|_| ())
+  gprl::fs::write_to_path(temp_file.path(), &text)?;
+  swiss::runner::runner(spawn, Just, &["--justfile"], Some(&temp_file), args).map(|_| ())
 }
 
 fn main() -> Res {
   let app: CLI = CLI::parse();
-  tracing_subscriber::fmt().with_max_level(app.level).init();
+  tracing_subscriber::fmt().with_max_level(app.filter).init();
   swiss::viewer::viewer(&app.book)?;
   if !app.args.is_empty() {
     run(&app.book.expect("Book is missing"), &app.args)?;

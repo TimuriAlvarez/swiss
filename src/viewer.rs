@@ -11,21 +11,23 @@ struct ViewModel {
   pub recipes: Option::<String>,
 }
 
-fn query(book: &String, query: &[&str]) -> Res::<String> {
-  let text: String = crate::xdg::book(book)?;
-  let text: String = crate::xdg::expand(&text);
+fn query(temp_file: &temp_file::TempFile, query: &[&str]) -> Res::<String> {
   let query: Vec::<String> = query.into_iter().map(|s| s.to_string()).collect();
-  crate::runner::runner(output, Just, &["--justfile"], Some(&text), &query)
+  crate::runner::runner(output, Just, &["--justfile"], Some(temp_file), &query)
 }
 
 fn presenter(book: &Option::<String>) -> Res::<ViewModel> {
-  Ok(if let Some(book) = book { ViewModel {
+  Ok(if let Some(book) = book {
+    let text: String = crate::xdg::book(book)?;
+    let text: String = crate::xdg::expand(&text);
+    let temp_file: temp_file::TempFile = temp_file::TempFile::with_suffix(".justfile")?.with_contents(&text.into_bytes())?;
+    ViewModel {
     name: book.to_string(),
-    version: query(book, &["--evaluate", "version"])?,
-    description: query(book, &["--evaluate", "description"])?,
-    repository: query(book, &["--evaluate", "repository"])?,
+    version: query(&temp_file, &["--evaluate", "version"])?,
+    description: query(&temp_file, &["--evaluate", "description"])?,
+    repository: query(&temp_file, &["--evaluate", "repository"])?,
     books: None,
-    recipes: Some(query(book, &["--list", "--list-heading", "", "--list-prefix", ""])?),
+    recipes: Some(query(&temp_file, &["--list", "--list-heading", "", "--list-prefix", ""])?),
   }} else { ViewModel {
     name: env!("CARGO_PKG_NAME").to_string(),
     version: env!("CARGO_PKG_VERSION").to_string(),
@@ -68,15 +70,16 @@ impl ViewModel {
     }
     parts.join("\n\n")
   }
-  pub fn display(&self) {
+  pub fn display(&self) -> Res {
     let text: String = self.markdown();
-    if crate::runner::runner(spawn, Glow, &["--width", "0"], Some(&text), &[]).is_ok() { return }
-    if crate::runner::runner(spawn, More, &["--silent", "--clean-print"], Some(&text), &[]).is_ok() { return }
+    let temp_file: temp_file::TempFile = temp_file::TempFile::with_suffix(".md")?.with_contents(&text.clone().into_bytes())?;
+    if crate::runner::runner(spawn, Glow, &["--width", "0"], Some(&temp_file), &[]).is_ok() { return Ok(()) }
+    if crate::runner::runner(spawn, More, &["--silent", "--clean-print"], Some(&temp_file), &[]).is_ok() { return Ok(()) }
     println!("{text}");
+    Ok(())
   }
 }
 
 pub fn viewer(book: &Option::<String>) -> Res {
-  presenter(book)?.display();
-  Ok(())
+  presenter(book)?.display()
 }

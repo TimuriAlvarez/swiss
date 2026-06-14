@@ -11,13 +11,14 @@ fn confirm_book_execution() -> Res::<bool> {
   Ok(input == "" || input == "y")
 }
 
-fn display_book_script(text: &String) {
-  if crate::runner::runner(spawn, Glow, &["--tui", "--width", "0"], Some(&format!("```justfile\n{text}\n```\n")), &[]).is_ok() { return }
-  if crate::runner::runner(spawn, More, &["--silent", "--clean-print"], Some(text), &[]).is_ok() { return }
+fn display_book_script(temp_file: &temp_file::TempFile) {
+  if crate::runner::runner(spawn, Glow, &["--tui", "--width", "0"], Some(&temp_file), &[]).is_ok() { return }
+  if crate::runner::runner(spawn, More, &["--silent", "--clean-print"], Some(&temp_file), &[]).is_ok() { return }
+  let text: String = std::fs::read_to_string(temp_file).unwrap_or_default();
   println!("{text}");
 }
 
-pub fn confirm(_book: &String, text: &String) -> Res::<bool> {
-  display_book_script(text);
+pub fn confirm(_book: &String, temp_file: &temp_file::TempFile) -> Res::<bool> {
+  display_book_script(temp_file);
   confirm_book_execution()
 }
