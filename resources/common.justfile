@@ -8,11 +8,6 @@ set unstable
 self := f'just --justfile {{ justfile() }}'
 _self(recipe) := f'{{ self }} {{ recipe }}'
 
-# a default recipe for all books
-[default]
-_:
-    @ {{ self }} --list
-
 # no operation instruction
 _nop *args:
 nop := _self('_nop')

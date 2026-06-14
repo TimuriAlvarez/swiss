@@ -26,7 +26,13 @@ pub fn book(book: &String) -> Result::<String, std::io::Error> {
 
 pub fn expand(text: &String) -> String {
   let common: &str = include_str!("../resources/common.justfile").trim();
+  let variables: &str = include_str!("../resources/variables.justfile").trim();
   let conditions: &str = include_str!("../resources/conditions.justfile").trim();
   let lists: &str = include_str!("../resources/lists.justfile").trim();
-  format!("{}\n", [text.as_str(), common, conditions, lists].join("\n\n"))
+  let default: &str = include_str!("../resources/default.justfile").trim();
+  let mut parts: Vec::<&str> = vec![text, common, variables, conditions, lists];
+  if !text.lines().any(|line: &str| line == "[default]") {
+    parts.push(default);
+  }
+  format!("{}\n", parts.join("\n\n"))
 }
