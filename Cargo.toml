@@ -2,7 +2,7 @@
 name = "swiss"
 version = "0.11.0"
 edition = "2024"
-description = "🐺 Just a script manager - https://github.com/TimuriAlvarez/swiss"
+description = "🐺 Just a script manager"
 repository = "https://github.com/TimuriAlvarez/swiss"
 
 [features]

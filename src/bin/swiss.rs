@@ -9,9 +9,9 @@ pub enum EditorMode {
   Line,
 }
 
-/// Edit a specified file's content (powered by 'regex')
+/// 🐺 Just a script manager - https://github.com/TimuriAlvarez/swiss
 #[derive(Parser)]
-#[command(version, about)]
+#[command(version)]
 pub struct CLI {
   /// Log level
   #[arg(long="log-level", default_value="info")]
