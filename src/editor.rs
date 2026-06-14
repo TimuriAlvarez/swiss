@@ -56,14 +56,14 @@ fn expand_refs_values(expression_haystack: &String, literals: &[String]) -> Res:
   expand_refs_caps(expression_haystack, &expression_caps, true)
 }
 
-pub fn editor(mode: &str, haystack: &String, pattern: &String, replacement: &String, literals: &[String]) -> Res::<String> {
+pub fn editor<T: std::fmt::Display>(mode: T, haystack: &String, pattern: &String, replacement: &String, literals: &[String]) -> Res::<String> {
   // Expand all references from the pattern to literals
   let pat: String = expand_refs_values(pattern, literals)?;
   // Create a regular expression from the pattern
-  let re: regex::Regex = match mode {
-    "Free" => ReBuilder::Free(&pat).build()?,
-    "Word" => ReBuilder::Word(&pat).build()?,
-    "Line" => ReBuilder::Line(&pat).build()?,
+  let re: regex::Regex = match mode.to_string().as_str() {
+    "free" => ReBuilder::Free(&pat).build()?,
+    "word" => ReBuilder::Word(&pat).build()?,
+    "line" => ReBuilder::Line(&pat).build()?,
     _ => panic!("Invalid editor mode"),
   };
   // Unescape the replacement

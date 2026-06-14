@@ -2,6 +2,7 @@ use clap::{Parser, ValueEnum};
 use tracing::{event, Level};
 
 #[derive(ValueEnum, Clone, derive_more::Display)]
+#[display(rename_all = "lowercase")]
 pub enum EditorMode {
   Free,
   Word,
@@ -36,7 +37,7 @@ fn main() -> gprl::types::Res {
   let app: CLI = CLI::parse();
   tracing_subscriber::fmt().with_max_level(app.level).init();
   let haystack: String = std::fs::read_to_string(&app.file)?;
-  let result: String = swiss::editor::editor(&app.mode.to_string(), &haystack, &app.pattern, &app.replacement, &app.literals)?;
+  let result: String = swiss::editor::editor(app.mode, &haystack, &app.pattern, &app.replacement, &app.literals)?;
   if haystack == result {
     event!(Level::INFO, "No changes to the '{}' file were made", app.file);
   } else {
