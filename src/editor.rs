@@ -15,7 +15,11 @@ impl<'a> ReBuilder<'a> {
       ReBuilder::Literals(s) => regex::Regex::new(&format!(r"({})", s.join(r")\n("))),
       ReBuilder::Free(s) => regex::Regex::new(s),
       ReBuilder::Word(s) => regex::Regex::new(&format!(r"\<{s}\>")),
-      ReBuilder::Line(s) => regex::Regex::new(&format!(r"(?m)^{s}$")),
+      ReBuilder::Line(s) => {
+        let begin: &str = if s.starts_with(r"\n") { "" } else { "^" };
+        let end: &str = if s.ends_with(r"\n") { "" } else { "$" };
+        regex::Regex::new(&format!(r"(?m){begin}{s}{end}"))
+      },
     }
   }
 }

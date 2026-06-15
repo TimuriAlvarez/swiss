@@ -36,7 +36,7 @@ pub struct CLI {
 fn main() -> gprl::types::Res {
   let app: CLI = CLI::parse();
   tracing_subscriber::fmt().with_max_level(app.level).init();
-  let haystack: String = std::fs::read_to_string(&app.file)?;
+  let haystack: String = std::fs::read_to_string(&app.file).unwrap_or_default();
   let result: String = swiss::editor::editor(app.mode, &haystack, &app.pattern, &app.replacement, &app.literals)?;
   if haystack == result {
     event!(Level::INFO, "No changes to the '{}' file were made", app.file);
