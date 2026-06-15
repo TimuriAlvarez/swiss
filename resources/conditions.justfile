@@ -1,6 +1,6 @@
 # if-op
 _if-op a op b then else='_nop' *args:
-    @ if [ '{{ a }}' {{ op }} '{{ b }}' ]; then {{ self }} {{ then }} {{ args }}; else {{ self }} {{ else }} {{ args }}; fi
+    @if [ '{{ a }}' {{ op }} '{{ b }}' ]; then {{ self }} {{ then }} {{ args }}; else {{ self }} {{ else }} {{ args }}; fi
 if-op := _self('_if-op')
 
 # if equal
