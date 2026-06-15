@@ -6,7 +6,7 @@ set unstable
 
 # a performant callback function
 self := f'just --justfile {{ justfile() }}'
-_self(recipe) := f'{{ self }} {{ recipe }}'
+_self(recipe) := self + ' ' + recipe
 
 # no operation instruction
 _nop *args:
