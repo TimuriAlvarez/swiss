@@ -23,9 +23,9 @@ fn presenter(book: &Option::<String>) -> Res::<ViewModel> {
     let temp_file: temp_file::TempFile = temp_file::TempFile::with_suffix(".justfile")?.with_contents(&text.into_bytes())?;
     ViewModel {
     name: book.to_string(),
-    version: query(&temp_file, &["--evaluate", "version"])?,
-    description: query(&temp_file, &["--evaluate", "description"])?,
-    repository: query(&temp_file, &["--evaluate", "repository"])?,
+    version: query(&temp_file, &["--evaluate", "book-version"])?,
+    description: query(&temp_file, &["--evaluate", "book-description"])?,
+    repository: query(&temp_file, &["--evaluate", "book-repository"])?,
     books: None,
     recipes: Some(query(&temp_file, &["--list", "--list-heading", "", "--list-prefix", ""])?),
   }} else { ViewModel {
