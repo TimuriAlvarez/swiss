@@ -11,10 +11,10 @@ list-print := _self('_list-print')
 
 # act if list contains a specified element
 _list-if-in list-contents el-value then else='_nop' *args:
-    @{{ if-nz }} "`{{ list-iter }} '{{ list-contents }}' 'el' 'if($el==\"{{ el-value }}\") print $el'`" '{{ then }}' '{{ else }}' '{{ args }}'
+    @{{ if-nz }} "`{{ list-iter }} '{{ list-contents }}' 'el' 'if($el==\"{{ el-value }}\") print $el'`" '{{ then }}' '{{ else }}' {{ quote(args) }}
 list-if-in := _self('_list-if-in')
 
 # act if list does not contain a specified element
 _list-if-no list-contents el-value then else='_nop' *args:
-    @{{ if-ez }} "`{{ list-iter }} '{{ list-contents }}' 'el' 'if($el==\"{{ el-value }}\") print $el'`" '{{ then }}' '{{ else }}' '{{ args }}'
+    @{{ if-ez }} "`{{ list-iter }} '{{ list-contents }}' 'el' 'if($el==\"{{ el-value }}\") print $el'`" '{{ then }}' '{{ else }}' {{ quote(args) }}
 list-if-no := _self('_list-if-no')
