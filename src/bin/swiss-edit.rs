@@ -1,13 +1,5 @@
-use clap::{Parser, ValueEnum};
+use clap::Parser;
 use tracing::{event, Level};
-
-#[derive(ValueEnum, Clone, derive_more::Display)]
-#[display(rename_all = "lowercase")]
-pub enum EditorMode {
-  Free,
-  Word,
-  Line,
-}
 
 /// 🐺 Just a file editor (powered by regex) - https://github.com/TimuriAlvarez/swiss
 #[derive(Parser)]
@@ -16,11 +8,7 @@ pub struct CLI {
   /// Log level
   #[arg(long="log-level", default_value="info")]
   level: tracing::Level,
-  /// Editor mode
-  #[arg(short, long, default_value="line")]
-  mode: EditorMode,
   /// Path to the file to be edited
-  #[arg(allow_hyphen_values=true)]
   file: String,
   /// A regex pattern to look for
   #[arg(allow_hyphen_values=true)]
@@ -37,7 +25,7 @@ fn main() -> gprl::types::Res {
   let app: CLI = CLI::parse();
   tracing_subscriber::fmt().with_max_level(app.level).init();
   let haystack: String = std::fs::read_to_string(&app.file).unwrap_or_default();
-  let result: String = swiss::editor::editor(app.mode, &haystack, &app.pattern, &app.replacement, &app.literals)?;
+  let result: String = swiss::editor::editor(&haystack, &app.pattern, &app.replacement, &app.literals)?;
   if haystack == result {
     event!(Level::INFO, "No changes to the '{}' file were made", app.file);
   } else {

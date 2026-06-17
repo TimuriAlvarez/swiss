@@ -1,13 +1,6 @@
 use gprl::types::Res;
-use clap::{Parser, ValueEnum};
+use clap::Parser;
 use swiss::runner::{spawn, Program::*};
-
-#[derive(ValueEnum, Clone, derive_more::Display)]
-pub enum EditorMode {
-  Free,
-  Word,
-  Line,
-}
 
 /// 🐺 Just a script manager - https://github.com/TimuriAlvarez/swiss
 #[derive(Parser)]
@@ -17,7 +10,6 @@ pub struct CLI {
   #[arg(long="log-level", default_value="info")]
   filter: tracing::Level,
   /// Recipe book's name
-  #[arg(allow_hyphen_values=true)]
   book: Option::<String>,
   /// Recipe's arguments
   #[arg(allow_hyphen_values=true)]

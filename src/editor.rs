@@ -3,21 +3,24 @@ use gprl::types::Res;
 enum ReBuilder<'a> {
   Reference,
   Literals(&'a [String]),
-  Free(&'a String),
-  Word(&'a String),
-  Line(&'a String),
+  Pattern(&'a String),
 }
 
 impl<'a> ReBuilder<'a> {
+  const RESERVED: [&'static str; 10] = [r"\n", r"\r", r"\A", r"\z", r"\b", r"\B", r"\<", r"\>", r"^", r"$"];
+  fn reserved_prefix(s: &String) -> bool {
+    Self::RESERVED.into_iter().any(|pat: &str| s.starts_with(pat))
+  }
+  fn reserved_suffix(s: &String) -> bool {
+    Self::RESERVED.into_iter().any(|pat: &str| s.starts_with(pat))
+  }
   pub fn build(self) -> Result::<regex::Regex, regex::Error> {
     match self {
       ReBuilder::Reference => regex::Regex::new(r"&(\d+)"),
       ReBuilder::Literals(s) => regex::Regex::new(&format!(r"({})", s.join(r")\n("))),
-      ReBuilder::Free(s) => regex::Regex::new(s),
-      ReBuilder::Word(s) => regex::Regex::new(&format!(r"\<{s}\>")),
-      ReBuilder::Line(s) => {
-        let begin: &str = if s.starts_with(r"\n") { "" } else { "^" };
-        let end: &str = if s.ends_with(r"\n") { "" } else { "$" };
+      ReBuilder::Pattern(s) => {
+        let begin: &str = if Self::reserved_prefix(s) { "" } else { "^" };
+        let end: &str = if Self::reserved_suffix(s) { "" } else { "$" };
         regex::Regex::new(&format!(r"(?m){begin}{s}{end}"))
       },
     }
@@ -60,16 +63,11 @@ fn expand_refs_values(expression_haystack: &String, literals: &[String]) -> Res:
   expand_refs_caps(expression_haystack, &expression_caps, true)
 }
 
-pub fn editor<T: std::fmt::Display>(mode: T, haystack: &String, pattern: &String, replacement: &String, literals: &[String]) -> Res::<String> {
+pub fn editor(haystack: &String, pattern: &String, replacement: &String, literals: &[String]) -> Res::<String> {
   // Expand all references from the pattern to literals
   let pat: String = expand_refs_values(pattern, literals)?;
   // Create a regular expression from the pattern
-  let re: regex::Regex = match mode.to_string().as_str() {
-    "free" => ReBuilder::Free(&pat).build()?,
-    "word" => ReBuilder::Word(&pat).build()?,
-    "line" => ReBuilder::Line(&pat).build()?,
-    _ => panic!("Invalid editor mode"),
-  };
+  let re: regex::Regex = ReBuilder::Pattern(&pat).build()?;
   // Unescape the replacement
   let rep: String = unescape::unescape(replacement).unwrap();
   // Replace all occurrences of the pattern with the replacement
