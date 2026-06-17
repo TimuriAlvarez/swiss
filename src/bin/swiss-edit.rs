@@ -8,6 +8,9 @@ pub struct CLI {
   /// Log level
   #[arg(long="log-level", default_value="info")]
   level: tracing::Level,
+  /// If there is a file present when edition is requested, the operation is skipped
+  #[arg(long="skip-existing", default_value="false")]
+  skip_existing: bool,
   /// Path to the file to be edited
   file: String,
   /// A regex pattern to look for
@@ -24,6 +27,9 @@ pub struct CLI {
 fn main() -> gprl::types::Res {
   let app: CLI = CLI::parse();
   tracing_subscriber::fmt().with_max_level(app.level).init();
+  if app.skip_existing && std::path::Path::new(&app.file).exists() {
+    return Ok(())
+  }
   let haystack: String = std::fs::read_to_string(&app.file).unwrap_or_default();
   let result: String = swiss::editor::editor(&haystack, &app.pattern, &app.replacement, &app.literals)?;
   if haystack == result {
