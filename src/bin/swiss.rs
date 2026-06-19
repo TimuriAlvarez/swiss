@@ -30,8 +30,6 @@ fn main() -> Res {
   let app: CLI = CLI::parse();
   tracing_subscriber::fmt().with_max_level(app.filter).init();
   swiss::viewer::viewer(&app.book)?;
-  if !app.args.is_empty() {
-    run(&app.book.expect("Book is missing"), &app.args)?;
-  }
+  run(&app.book.expect("Book is missing"), &app.args)?;
   Ok(())
 }
