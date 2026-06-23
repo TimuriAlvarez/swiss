@@ -1,4 +1,5 @@
 use gprl::types::Res;
+use tracing::{event, Level};
 
 enum ReBuilder<'a> {
   Reference,
@@ -12,7 +13,7 @@ impl<'a> ReBuilder<'a> {
     Self::RESERVED.into_iter().any(|pat: &str| s.starts_with(pat))
   }
   fn reserved_suffix(s: &String) -> bool {
-    Self::RESERVED.into_iter().any(|pat: &str| s.starts_with(pat))
+    Self::RESERVED.into_iter().any(|pat: &str| s.ends_with(pat))
   }
   pub fn build(self) -> Result::<regex::Regex, regex::Error> {
     match self {
@@ -66,13 +67,17 @@ fn expand_refs_values(expression_haystack: &String, literals: &[String]) -> Res:
 pub fn editor(haystack: &String, pattern: &String, replacement: &String, literals: &[String]) -> Res::<String> {
   // Expand all references from the pattern to literals
   let pat: String = expand_refs_values(pattern, literals)?;
+  event!(Level::DEBUG, "pattern = {pat:?}");
   // Create a regular expression from the pattern
   let re: regex::Regex = ReBuilder::Pattern(&pat).build()?;
+  event!(Level::DEBUG, "re = {re:?}");
   // Unescape the replacement
   let rep: String = unescape::unescape(replacement).unwrap();
+  event!(Level::DEBUG, "replacement = {rep:?}");
   // Replace all occurrences of the pattern with the replacement
   Ok(replace_all(&re, haystack, |caps: &regex::Captures| -> Res::<String> {
     // Expand all references from the replacement to current captures
+    event!(Level::DEBUG, "captures = {caps:?}");
     Ok(expand_refs_caps(&rep, caps, false)?)
   })?)
 }
