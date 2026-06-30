@@ -24,7 +24,7 @@ fn run(book: &String, args: &[String]) -> Res {
   let text: String = swiss::xdg::expand(&text);
   gprl::fs::write_to_path(temp_file.path(), &text)?;
   swiss::runner::runner(spawn, Just, &["--justfile"], Some(&temp_file), args)?;
-  swiss::xdg::var_purge(temp_file.path().file_stem().expect("Failed to parse file stem").to_str().expect("Failed to convert OsStr -> &str"))?;
+  swiss::variable::purge(temp_file.path().file_stem().expect("Failed to parse file stem").to_str().expect("Failed to convert OsStr -> &str"))?;
   if !swiss::trusted_agent::confirm(book, &original_text, &temp_file, swiss::trusted_agent::PROMPT)? { return Ok(()) }
   swiss::trusted_agent::trust(book, &original_text)?;
   Ok(())

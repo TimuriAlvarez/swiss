@@ -4,6 +4,9 @@ pub mod editor;
 #[cfg(feature = "xdg")]
 pub mod xdg;
 
+#[cfg(feature = "xdg")]
+pub mod variable;
+
 #[cfg(feature = "runner")]
 pub mod viewer;
 
