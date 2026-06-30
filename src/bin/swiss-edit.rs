@@ -8,6 +8,9 @@ pub struct CLI {
   /// Log level
   #[arg(long="log-level", default_value="info")]
   level: tracing::Level,
+  /// Enable matches extraction
+  #[arg(long="extract", default_value="false")]
+  extract: bool,
   /// If there is a file present when edition is requested, the operation is skipped
   #[arg(long="skip-existing", default_value="false")]
   skip_existing: bool,
@@ -31,7 +34,7 @@ fn main() -> gprl::types::Res {
     return Ok(())
   }
   let haystack: String = std::fs::read_to_string(&app.file).unwrap_or_default();
-  let result: String = swiss::editor::editor(&haystack, &app.pattern, &app.replacement, &app.literals)?;
+  let result: String = swiss::editor::editor(app.extract, &haystack, &app.pattern, &app.replacement, &app.literals)?;
   if haystack == result {
     event!(Level::INFO, "No changes to the '{}' file were made", app.file);
   } else {
