@@ -1,6 +1,6 @@
 [package]
 name = "swiss"
-version = "0.11.5"
+version = "0.12.0"
 edition = "2024"
 description = "🐺 Just a script manager"
 repository = "https://github.com/TimuriAlvarez/swiss"
@@ -11,7 +11,7 @@ common = ["dep:gprl", "gprl?/types", "dep:tracing"]
 # lib features
 editor = ["common", "dep:regex", "dep:unescape", "gprl?/fs"]
 xdg = ["common", "dep:xdg", "dep:dirwalk", "dep:lexical-sort"]
-runner = ["common", "xdg", "dep:temp-file"]
+runner = ["common", "xdg", "dep:temp-file", "dep:blake3", "editor"]
 # bin features
 cli = ["common", "dep:clap", "clap?/derive", "dep:derive_more", "derive_more?/display", "dep:tracing", "dep:tracing-subscriber"]
 default = ["cli", "editor", "runner"]
@@ -27,6 +27,7 @@ xdg = { version = "*", optional = true }
 dirwalk = { version = "*", optional = true }
 lexical-sort = { version = "*", optional = true }
 temp-file = { version = "*", optional = true }
+blake3 = { version = "*", optional = true }
 # bin dependencies
 clap = { version = "*", optional = true }
 derive_more = { version = "*", optional = true }
