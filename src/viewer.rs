@@ -1,5 +1,18 @@
 use gprl::types::Res;
+use lexical_sort::StringSort;
 use crate::runner::{spawn, output, Program::*};
+
+fn list_books() -> Res::<String> {
+  let entries: Vec::<dirwalk::Entry> = dirwalk::WalkBuilder::new(crate::xdg::data_path("books")?).build()?.entries;
+  let mut books: Vec::<String> = vec![];
+  for entry in entries {
+    if entry.extension() == Some("justfile") {
+      books.push(entry.relative_path[..entry.relative_path.len()-"justfile".len()-1].to_string());
+    }
+  }
+  books.string_sort(lexical_sort::natural_lexical_cmp);
+  Ok(books.join("\n"))
+}
 
 #[derive(Debug)]
 struct ViewModel {
@@ -33,7 +46,7 @@ fn presenter(book: &Option::<String>) -> Res::<ViewModel> {
     version: env!("CARGO_PKG_VERSION").to_string(),
     description: env!("CARGO_PKG_DESCRIPTION").to_string(),
     repository: env!("CARGO_PKG_REPOSITORY").to_string(),
-    books: Some(crate::xdg::books()?),
+    books: Some(list_books()?),
     recipes: None,
   }})
 }
