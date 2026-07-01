@@ -17,7 +17,7 @@ impl<'a> ReBuilder<'a> {
   }
   pub fn build(self) -> Result::<regex::Regex, regex::Error> {
     match self {
-      ReBuilder::Reference => regex::Regex::new(r"&(\d+)"),
+      ReBuilder::Reference => regex::Regex::new(r"(&+)([[:digit:]]+)"),
       ReBuilder::Literals(s) => regex::Regex::new(&format!(r"({})", s.join(r")\n("))),
       ReBuilder::Pattern(s) => {
         let begin: &str = if Self::reserved_prefix(s) { "" } else { "^" };
@@ -52,10 +52,18 @@ fn expand_refs_caps(expression_haystack: &String, expression_caps: &regex::Captu
   let re: regex::Regex = ReBuilder::Reference.build()?;
   // Replace all occurrences of the reference pattern with the corresponding current capture
   Ok(replace_all(false, &re, expression_haystack, |caps: &regex::Captures| -> Res::<String> {
-    let result: &str = &expression_caps[caps[1].parse::<usize>()?];
+    // Fetch ampersands' count and index value
+    let ampersands: usize = caps[1].len();
+    let index: usize = caps[2].parse::<usize>()?;
+    // Decrease ampersands' count or dereference index
+    let result: String = match ampersands {
+      0 => unreachable!(),
+      1 => expression_caps[index].to_string(),
+      _ => format!("{}{index}", "&".repeat(ampersands - 1)),
+    };
     Ok(if escape {
       // If the result was obtained from a literal: escape it
-      regex::escape(result)
+      regex::escape(&result)
     } else {
       // Else: leave it as is to prevent unescaping strings that already were unescaped
       result.to_string()
@@ -83,7 +91,7 @@ pub fn editor(extract: bool, haystack: &String, pattern: &String, replacement: &
   let re: regex::Regex = ReBuilder::Pattern(&pat).build()?;
   event!(Level::DEBUG, "re = {re:?}");
   // Unescape the replacement
-  let rep: String = unescape::unescape(replacement).unwrap();
+  let rep: String = unescape::unescape(replacement).expect(&format!("Failed to unescape {replacement:?} string"));
   event!(Level::DEBUG, "replacement = {rep:?}");
   // Replace all occurrences of the pattern with the replacement
   Ok(replace_all(extract, &re, haystack, |caps: &regex::Captures| -> Res::<String> {

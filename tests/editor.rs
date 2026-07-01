@@ -59,3 +59,9 @@ fn extract() -> Res {
   test("extract", "a3", true, r"&1(.*)", r"&1\n", &["1234"])?;
   Ok(())
 }
+
+#[test]
+fn references() -> Res {
+  test("extract", "b1", true, r"efg", r"&&0&0&&0\n", &[])?;
+  Ok(())
+}
