@@ -17,7 +17,7 @@ impl<'a> ReBuilder<'a> {
   }
   pub fn build(self) -> Result::<regex::Regex, regex::Error> {
     match self {
-      ReBuilder::Reference => regex::Regex::new(r"(&+)([[:digit:]]+)"),
+      ReBuilder::Reference => regex::Regex::new(r"(&?)&([[:digit:]]+):?"),
       ReBuilder::Literals(s) => regex::Regex::new(&format!(r"({})", s.join(r")\n("))),
       ReBuilder::Pattern(s) => {
         let begin: &str = if Self::reserved_prefix(s) { "" } else { "^" };
@@ -52,14 +52,15 @@ fn expand_refs_caps(expression_haystack: &String, expression_caps: &regex::Captu
   let re: regex::Regex = ReBuilder::Reference.build()?;
   // Replace all occurrences of the reference pattern with the corresponding current capture
   Ok(replace_all(false, &re, expression_haystack, |caps: &regex::Captures| -> Res::<String> {
-    // Fetch ampersands' count and index value
-    let ampersands: usize = caps[1].len();
+    // Fetch prepended state and index value
+    let prepended: bool = caps[1].len() > 0usize;
     let index: usize = caps[2].parse::<usize>()?;
-    // Decrease ampersands' count or dereference index
-    let result: String = match ampersands {
-      0 => unreachable!(),
-      1 => expression_caps[index].to_string(),
-      _ => format!("{}{index}", "&".repeat(ampersands - 1)),
+    let result: String = if prepended {
+      // Trim prefix and suffix
+      format!("&{index}")
+    } else {
+      // Dereference index
+      expression_caps[index].to_string()
     };
     Ok(if escape {
       // If the result was obtained from a literal: escape it

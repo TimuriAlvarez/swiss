@@ -47,7 +47,7 @@ fn literals() -> Res {
   test("literals", "a2", false, r"\<&1\>", r"dict", &["val"])?;
   test("literals", "a3", false, r"(&1)", r"&1\n&1", &["abc.abc"])?;
   test("literals", "a4", false, r"&1.&1", r"&0\n&0", &["abc"])?;
-  test("literals", "a5", false, r"(&1 =).*", r"&1 255 # swiss &0", &["val.a"])?;
+  test("literals", "a5", false, r"(&1 = ).*", r"&1:255 # swiss &0", &["val.a"])?;
   test("literals", "a6", false, r".* # swiss (&1.*)", r"&1", &["val.b"])?;
   Ok(())
 }
