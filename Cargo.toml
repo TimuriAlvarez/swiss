@@ -1,34 +1,20 @@
 [package]
 name = "swiss"
-version = "0.12.0"
+version = "0.13.0"
 edition = "2024"
 description = "🐺 Just a script manager"
 repository = "https://github.com/TimuriAlvarez/swiss"
 
 [features]
-# common features
-common = ["dep:gprl", "gprl?/types", "dep:tracing"]
-# lib features
-editor = ["common", "dep:regex", "dep:unescape", "gprl?/fs"]
-xdg = ["common", "dep:xdg", "dep:dirwalk", "dep:lexical-sort"]
-runner = ["common", "xdg", "dep:temp-file", "dep:blake3", "editor"]
-# bin features
-cli = ["common", "dep:clap", "clap?/derive", "dep:derive_more", "derive_more?/display", "dep:tracing", "dep:tracing-subscriber"]
-default = ["cli", "editor", "runner"]
+cli = ["dep:clap", "clap?/derive", "dep:tracing", "dep:tracing-subscriber"]
+runner = ["dep:gprl", "gprl?/types"]
+editor = ["dep:gprl", "gprl?/types", "gprl?/fs", "dep:regex", "dep:unescape"]
+default = ["cli", "runner", "editor"]
 
 [dependencies]
-# common dependencies
-gprl = { version = "*", git = "https://github.com/TimuriAlvarez/gprl.git", optional = true }
+clap = { version = "*", optional = true }
 tracing = { version = "*", optional = true }
-# lib dependencies
+tracing-subscriber = { version = "*", optional = true }
+gprl = { version = "*", git = "https://github.com/TimuriAlvarez/gprl.git", optional = true }
 regex = { version = "*", optional = true }
 unescape = { version = "*", optional = true }
-xdg = { version = "*", optional = true }
-dirwalk = { version = "*", optional = true }
-lexical-sort = { version = "*", optional = true }
-temp-file = { version = "*", optional = true }
-blake3 = { version = "*", optional = true }
-# bin dependencies
-clap = { version = "*", optional = true }
-derive_more = { version = "*", optional = true }
-tracing-subscriber = { version = "*", optional = true }

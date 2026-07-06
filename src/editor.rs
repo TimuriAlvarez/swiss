@@ -9,10 +9,10 @@ enum ReBuilder<'a> {
 
 impl<'a> ReBuilder<'a> {
   const RESERVED: [&'static str; 10] = [r"\n", r"\r", r"\A", r"\z", r"\b", r"\B", r"\<", r"\>", r"^", r"$"];
-  fn reserved_prefix(s: &String) -> bool {
+  fn reserved_prefix(s: &str) -> bool {
     Self::RESERVED.into_iter().any(|pat: &str| s.starts_with(pat))
   }
-  fn reserved_suffix(s: &String) -> bool {
+  fn reserved_suffix(s: &str) -> bool {
     Self::RESERVED.into_iter().any(|pat: &str| s.ends_with(pat))
   }
   pub fn build(self) -> Result::<regex::Regex, regex::Error> {
@@ -47,7 +47,7 @@ fn replace_all(extract: bool, re: &regex::Regex, haystack: &str, f: impl Fn(&reg
   Ok(new)
 }
 
-fn expand_refs_caps(expression_haystack: &String, expression_caps: &regex::Captures, escape: bool) -> Res::<String> {
+fn expand_refs_caps(expression_haystack: &str, expression_caps: &regex::Captures, escape: bool) -> Res::<String> {
   // Create a regular expression of the reference
   let re: regex::Regex = ReBuilder::Reference.build()?;
   // Replace all occurrences of the reference pattern with the corresponding current capture
@@ -72,7 +72,7 @@ fn expand_refs_caps(expression_haystack: &String, expression_caps: &regex::Captu
   })?)
 }
 
-fn expand_refs_values(expression_haystack: &String, literals: &[String]) -> Res::<String> {
+fn expand_refs_values(expression_haystack: &str, literals: &[String]) -> Res::<String> {
   // Bundle literals into a haystack
   let haystack: String = literals.join("\n");
   // Build a special regex for these literals
@@ -84,7 +84,7 @@ fn expand_refs_values(expression_haystack: &String, literals: &[String]) -> Res:
   expand_refs_caps(expression_haystack, &expression_caps, true)
 }
 
-pub fn editor(extract: bool, haystack: &String, pattern: &String, replacement: &String, literals: &[String]) -> Res::<String> {
+pub fn editor(extract: bool, haystack: &str, pattern: &str, replacement: &str, literals: &[String]) -> Res::<String> {
   // Expand all references from the pattern to literals
   let pat: String = expand_refs_values(pattern, literals)?;
   event!(Level::DEBUG, "pattern = {pat:?}");

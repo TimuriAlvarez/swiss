@@ -1,13 +1,11 @@
 use gprl::types::Res;
 
-fn test(input: &str, id: &str, extract: bool, pat: &str, rep: &str, lit: &[&str]) -> Res {
-  let haystack: String = std::fs::read_to_string(format!("./tests/data/{input}.txt"))?;
-  let pattern: String = pat.to_string();
-  let replacement: String = rep.to_string();
-  let literals: Vec::<String> = lit.into_iter().map(|lit: &&str| lit.to_string()).collect();
-  let result: String = swiss::editor::editor(extract, &haystack, &pattern, &replacement, &literals)?;
-  let expected: String = std::fs::read_to_string(format!("./tests/data/{input}/{id}.txt"))?;
-  assert_eq!(result, expected, "{id}");
+fn test(c: &str, i: &str, b: bool, p: &str, r: &str, l: &[&str]) -> Res {
+  let haystack: String = std::fs::read_to_string(format!("./tests/data/{c}.txt"))?;
+  let literals: Vec::<String> = l.into_iter().map(|lit: &&str| lit.to_string()).collect();
+  let result: String = swiss::editor::editor(b, &haystack, p, r, &literals)?;
+  let expected: String = std::fs::read_to_string(format!("./tests/data/{c}/{i}.txt"))?;
+  assert_eq!(result, expected, "{i}");
   Ok(())
 }
 
