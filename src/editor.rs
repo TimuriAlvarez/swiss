@@ -2,13 +2,15 @@ use gprl::types::Res;
 use tracing::{event, Level};
 
 enum ReBuilder<'a> {
-  Reference,
   Literals(&'a [String]),
   Pattern(&'a String),
 }
 
 impl<'a> ReBuilder<'a> {
   const RESERVED: [&'static str; 10] = [r"\n", r"\r", r"\A", r"\z", r"\b", r"\B", r"\<", r"\>", r"^", r"$"];
+  const REFERENCE: std::sync::LazyLock::<regex::Regex> = std::sync::LazyLock::new(||
+    regex::Regex::new(r"(&?)&([[:digit:]]+):?").expect("Failed to construct a regex")
+  );
   fn reserved_prefix(s: &str) -> bool {
     Self::RESERVED.into_iter().any(|pat: &str| s.starts_with(pat))
   }
@@ -17,7 +19,6 @@ impl<'a> ReBuilder<'a> {
   }
   pub fn build(self) -> Result::<regex::Regex, regex::Error> {
     match self {
-      ReBuilder::Reference => regex::Regex::new(r"(&?)&([[:digit:]]+):?"),
       ReBuilder::Literals(s) => regex::Regex::new(&format!(r"({})", s.join(r")\n("))),
       ReBuilder::Pattern(s) => {
         let begin: &str = if Self::reserved_prefix(s) { "" } else { "^" };
@@ -48,10 +49,8 @@ fn replace_all(extract: bool, re: &regex::Regex, haystack: &str, f: impl Fn(&reg
 }
 
 fn expand_refs_caps(expression_haystack: &str, expression_caps: &regex::Captures, escape: bool) -> Res::<String> {
-  // Create a regular expression of the reference
-  let re: regex::Regex = ReBuilder::Reference.build()?;
   // Replace all occurrences of the reference pattern with the corresponding current capture
-  Ok(replace_all(false, &re, expression_haystack, |caps: &regex::Captures| -> Res::<String> {
+  Ok(replace_all(false, &ReBuilder::REFERENCE, expression_haystack, |caps: &regex::Captures| -> Res::<String> {
     // Fetch prepended state and index value
     let prepended: bool = caps[1].len() > 0usize;
     let index: usize = caps[2].parse::<usize>()?;
