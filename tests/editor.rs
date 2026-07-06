@@ -1,4 +1,4 @@
-use gprl::types::Res;
+use swiss::Res;
 
 fn test(c: &str, i: &str, b: bool, p: &str, r: &str, l: &[&str]) -> Res {
   let haystack: String = std::fs::read_to_string(format!("./tests/data/{c}.txt"))?;

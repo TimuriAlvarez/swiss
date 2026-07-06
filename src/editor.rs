@@ -1,4 +1,4 @@
-use gprl::types::Res;
+use crate::Res;
 use tracing::{event, Level};
 
 enum ReBuilder<'a> {

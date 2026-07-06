@@ -14,7 +14,7 @@ pub struct CLI {
   args: Vec::<String>,
 }
 
-fn main() -> gprl::types::Res {
+fn main() -> swiss::Res {
   let app: CLI = CLI::parse();
   tracing_subscriber::fmt().with_max_level(app.filter).init();
   Ok(())
