@@ -1,28 +1,39 @@
+use crate::Res;
+
+fn list(list: &str) -> String {
+  let list: &str = list.trim();
+  if list == "" { "there are none" } else { list }.to_string()
+}
+
 #[derive(derive_more::Display)]
 #[display(r#"# `{version}` {name}
 
 {description}
 
+## Available books
+
+{books}
+
 ## Repository
 
 {repository}
 "#)]
-pub struct AppViewModel {
+struct AppViewModel {
   name: String,
   version: String,
   description: String,
+  books: String,
   repository: String,
 }
 
-impl AppViewModel {
-  pub fn new() -> Self {
-    Self {
-      name: env!("CARGO_PKG_NAME").to_string(),
-      version: env!("CARGO_PKG_VERSION").to_string(),
-      description: env!("CARGO_PKG_DESCRIPTION").to_string(),
-      repository: env!("CARGO_PKG_REPOSITORY").to_string(),
-    }
-  }
+pub fn app(books: &str) -> Res::<String> {
+  Ok(AppViewModel {
+    name: env!("CARGO_PKG_NAME").to_string(),
+    version: env!("CARGO_PKG_VERSION").to_string(),
+    description: env!("CARGO_PKG_DESCRIPTION").to_string(),
+    books: list(books),
+    repository: env!("CARGO_PKG_REPOSITORY").to_string(),
+  }.to_string())
 }
 
 #[derive(derive_more::Display)]
@@ -31,21 +42,17 @@ impl AppViewModel {
 ## Available recipes
 
 ```console
-{list}
+{recipes}
 ```
 "#)]
-pub struct BookViewModel {
+struct BookViewModel {
   name: String,
-  list: String,
+  recipes: String,
 }
 
-impl BookViewModel {
-  pub fn new(book: &str, recipes: &str) -> Self {
-    let recipes: &str = recipes.trim();
-    let recipes: &str = if recipes == "" { "there are none" } else { recipes };
-    Self {
-      name: book.to_string(),
-      list: recipes.to_string(),
-    }
-  }
+pub fn book(book: &str, recipes: &str) -> Res::<String> {
+  Ok(BookViewModel {
+    name: book.to_string(),
+    recipes: list(recipes),
+  }.to_string())
 }
