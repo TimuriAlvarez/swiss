@@ -17,8 +17,9 @@ pub struct CLI {
 fn main() -> swiss::Res {
   let app: CLI = CLI::parse();
   tracing_subscriber::fmt().with_max_level(app.filter).init();
-  swiss::runner::viewer(&app.book)?;
+  let default: bool = swiss::runner::viewer(&app.book)?;
   if let Some(book) = app.book {
+    if !default && app.args.is_empty() { return Ok(()) }
     swiss::runner::runner(&book, &app.args)?;
   }
   Ok(())
