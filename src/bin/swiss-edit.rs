@@ -30,9 +30,7 @@ pub struct CLI {
 fn main() -> swiss::Res {
   let app: CLI = CLI::parse();
   tracing_subscriber::fmt().with_max_level(app.level).init();
-  if app.skip_existing && std::path::Path::new(&app.file).exists() {
-    return Ok(())
-  }
+  if app.skip_existing && std::path::Path::new(&app.file).exists() { return Ok(()) }
   let haystack: String = std::fs::read_to_string(&app.file).unwrap_or_default();
   let result: String = swiss::editor::editor(app.extract, &haystack, &app.pattern, &app.replacement, &app.literals)?;
   if haystack == result {

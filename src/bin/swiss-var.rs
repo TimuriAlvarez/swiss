@@ -19,6 +19,7 @@ pub struct CLI {
 enum Subcommand {
   /// Get a variable's value
   Get {
+    /// Variable's name
     name: String,
   },
   /// Set a variable's value
@@ -35,8 +36,7 @@ fn main() -> swiss::Res {
   let app: CLI = CLI::parse();
   tracing_subscriber::fmt().with_max_level(app.filter).init();
   match app.command {
-    Subcommand::Get { name } => swiss::variable::get(app.global, &name)?,
-    Subcommand::Set { name, value } => swiss::variable::set(app.global, &name, &value)?,
+    Subcommand::Get { name } => swiss::variable::get(app.global, &name),
+    Subcommand::Set { name, value } => swiss::variable::set(app.global, &name, &value),
   }
-  Ok(())
 }
