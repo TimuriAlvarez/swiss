@@ -7,16 +7,14 @@ self := 'just --justfile' ++ justfile()
 
 # shelly
 
-__shelly(cmd) := if cmd =~ '^\s*$' {
-    cmd
-} else if cmd =~ '^>.*' {
-    shell(replace_regex(cmd, '^>\s*', ''))
+__shelly(cmd) := if cmd =~ '^>.*' {
+    shell(trim(replace_regex(cmd, '^>', '')))
 } else if cmd =~ '^@.*' {
-    replace_regex(cmd, '^@\s*', '')
+    trim(replace_regex(cmd, '^@', ''))
 } else {
     '( echo ' + quote(BLACK + '>' + NORMAL + ' ' + BOLD + cmd + NORMAL) + '; ' + cmd + '; )'
 }
-shelly(cmd) := __shelly(join_list(cmd))
+shelly(cmd) := __shelly(trim(join_list(cmd)))
 
 # variables
 
