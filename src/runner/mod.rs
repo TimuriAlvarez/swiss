@@ -51,6 +51,6 @@ pub fn viewer(book: &Option::<String>) -> Res::<bool> {
 pub fn runner(book: &str, args: &[String]) -> Res {
   let tempfile: temp_file::TempFile = temp_file::with_contents(&contents(book)?.into_bytes());
   let result: Res = shell::run(shell::spawn, shell::JUST, &["--justfile"], Some(&tempfile), args).map(|_| ());
-  crate::variable::purge(&format!("{:?}", tempfile.path().file_stem().expect("unable to fetch a signature")))?;
+  crate::variable::purge(tempfile.path().file_stem().expect("unable to fetch a signature").to_str().expect("unable to convert a signature"))?;
   result
 }
