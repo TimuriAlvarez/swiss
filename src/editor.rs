@@ -7,24 +7,13 @@ enum ReBuilder<'a> {
 }
 
 impl<'a> ReBuilder<'a> {
-  const RESERVED: [&'static str; 10] = [r"\n", r"\r", r"\A", r"\z", r"\b", r"\B", r"\<", r"\>", r"^", r"$"];
   const REFERENCE: std::sync::LazyLock::<regex::Regex> = std::sync::LazyLock::new(||
     regex::Regex::new(r"(&?)&([[:digit:]]+):?").expect("Failed to construct a regex")
   );
-  fn reserved_prefix(s: &str) -> bool {
-    Self::RESERVED.into_iter().any(|pat: &str| s.starts_with(pat))
-  }
-  fn reserved_suffix(s: &str) -> bool {
-    Self::RESERVED.into_iter().any(|pat: &str| s.ends_with(pat))
-  }
   pub fn build(self) -> Result::<regex::Regex, regex::Error> {
     match self {
       ReBuilder::Literals(s) => regex::Regex::new(&format!(r"({})", s.join(r")\n("))),
-      ReBuilder::Pattern(s) => {
-        let begin: &str = if Self::reserved_prefix(s) { "" } else { "^" };
-        let end: &str = if Self::reserved_suffix(s) { "" } else { "$" };
-        regex::Regex::new(&format!(r"(?m){begin}{s}{end}"))
-      },
+      ReBuilder::Pattern(s) => regex::Regex::new(&format!(r"(?m){s}")),
     }
   }
 }

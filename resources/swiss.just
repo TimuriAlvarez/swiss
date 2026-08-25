@@ -26,5 +26,5 @@ shelly(cmd) := __shelly(trim(join_list(cmd)))
 
 # variables
 
-var(name) := shelly('>SWISS_SIGNATURE=' + quote(file_stem(justfile())) + ' swiss-var get ' + quote(lv(name)))
-let(name, value) := shelly('>SWISS_SIGNATURE=' + quote(file_stem(justfile())) + ' swiss-var set ' + quote(lv(name)) + ' ' + quote(lv(value)))
+var(name) := shelly(('>SWISS_SIGNATURE=' + quote(file_stem(justfile()))) ++ 'swiss-var get' ++ quote(lv(name)))
+let(name, value) := shelly(('>SWISS_SIGNATURE=' + quote(file_stem(justfile()))) ++ 'swiss-var set' ++ quote(lv(name)) ++ quote(lv(value)))
