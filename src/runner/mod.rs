@@ -2,6 +2,7 @@ use crate::Res;
 
 mod viewer;
 mod shell;
+mod extensions;
 
 fn books_path() -> std::io::Result::<std::path::PathBuf> {
   xdg::BaseDirectories::with_prefix(env!("CARGO_PKG_NAME")).create_data_directory("books")
@@ -33,7 +34,7 @@ fn list_books() -> Res::<String> {
 pub fn viewer(book: &Option::<String>) -> Res::<bool> {
   let mut default: bool = false;
   let markdown: String = if let Some(book) = book {
-    let contents: String = contents(book)?;
+    let contents: String = extensions::apply(&contents(book)?)?;
     default = contents.lines().any(|line: &str| line == "[default]");
     let tempfile: temp_file::TempFile = temp_file::with_contents(&contents.into_bytes());
     let recipes: shell::Output = shell::run(shell::output, shell::JUST, &["--list", "--list-heading", "", "--list-prefix", "", "--color", "always", "--justfile"], Some(&tempfile), &[])?;
@@ -49,7 +50,8 @@ pub fn viewer(book: &Option::<String>) -> Res::<bool> {
 }
 
 pub fn runner(book: &str, args: &[String]) -> Res {
-  let tempfile: temp_file::TempFile = temp_file::with_contents(&contents(book)?.into_bytes());
+  let contents: String = extensions::apply(&contents(book)?)?;
+  let tempfile: temp_file::TempFile = temp_file::with_contents(&contents.into_bytes());
   let result: Res = shell::run(shell::spawn, shell::JUST, &["--justfile"], Some(&tempfile), args).map(|_| ());
   crate::variable::purge(tempfile.path().file_stem().expect("unable to fetch a signature").to_str().expect("unable to convert a signature"))?;
   result
