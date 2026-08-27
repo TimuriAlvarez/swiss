@@ -16,15 +16,10 @@ lv(s) := replace(replace_regex(replace_regex(join_list(s),
 # shelly
 
 __shelly(cmd) := if cmd =~ '^>.*' {
-    shell(trim(replace_regex(cmd, '^>', '')))
+    shell(trim(replace_regex(cmd, '^>\s+', '')))
 } else if cmd =~ '^@.*' {
-    trim(replace_regex(cmd, '^@', ''))
+    trim(replace_regex(cmd, '^@\s+', ''))
 } else {
     '( echo ' + quote(BLACK + '>' + NORMAL + ' ' + BOLD + cmd + NORMAL) + '; ' + cmd + '; )'
 }
-shelly(cmd) := __shelly(trim(join_list(cmd)))
-
-# variables
-
-var(name) := shelly(('>SWISS_SIGNATURE=' + quote(file_stem(justfile()))) ++ 'swiss-var get' ++ quote(lv(name)))
-let(name, value) := shelly(('>SWISS_SIGNATURE=' + quote(file_stem(justfile()))) ++ 'swiss-var set' ++ quote(lv(name)) ++ quote(lv(value)))
+shelly(cmd) := __shelly(join_list(cmd))
