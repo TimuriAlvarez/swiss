@@ -1,4 +1,4 @@
-use crate::Res;
+use gprl::types::Res;
 
 fn list(list: &str) -> String {
   let list: &str = list.trim();

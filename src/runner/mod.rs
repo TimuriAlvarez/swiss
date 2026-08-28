@@ -1,4 +1,4 @@
-use crate::Res;
+use gprl::types::Res;
 
 mod viewer;
 mod shell;

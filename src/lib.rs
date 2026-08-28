@@ -1,5 +1,3 @@
-pub type Res<T=()> = anyhow::Result::<T>;
-
 #[cfg(feature = "editor")]
 pub mod editor;
 

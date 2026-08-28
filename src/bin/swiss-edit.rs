@@ -27,7 +27,7 @@ pub struct CLI {
   literals: Vec::<String>,
 }
 
-fn main() -> swiss::Res {
+fn main() -> gprl::types::Res {
   let app: CLI = CLI::parse();
   tracing_subscriber::fmt().with_max_level(app.level).init();
   if app.skip_existing && std::path::Path::new(&app.file).exists() { return Ok(()) }

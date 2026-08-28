@@ -1,4 +1,4 @@
-use crate::Res;
+use gprl::types::Res;
 
 pub const JUST: &str = "just";
 pub const GLOW: &str = "glow";

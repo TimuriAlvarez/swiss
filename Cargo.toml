@@ -7,20 +7,21 @@ repository = "https://github.com/TimuriAlvarez/swiss"
 
 [features]
 cli = ["dep:clap", "clap?/derive", "dep:tracing", "dep:tracing-subscriber"]
-runner = ["dep:anyhow", "dep:xdg", "dep:lexical-sort", "dep:dirwalk", "dep:derive_more", "derive_more?/display", "dep:temp-file"]
-editor = ["dep:anyhow", "dep:gprl", "gprl?/fs", "dep:regex", "dep:unescape"]
-default = ["cli", "runner", "editor"]
+daemon = ["dep:gprl", "gprl?/types"]
+runner = ["dep:gprl", "gprl?/types", "dep:xdg", "dep:lexical-sort", "dep:dirwalk", "dep:derive_more", "derive_more?/display", "dep:temp-file", "dep:anyhow"]
+editor = ["dep:gprl", "gprl?/types", "gprl?/fs", "dep:regex", "dep:unescape"]
+default = ["cli", "daemon", "runner", "editor"]
 
 [dependencies]
 clap = { version = "*", optional = true }
 tracing = { version = "*", optional = true }
 tracing-subscriber = { version = "*", optional = true }
-anyhow = { version = "*", optional = true }
 xdg = { version = "*", optional = true }
 lexical-sort = { version = "*", optional = true }
 dirwalk = { version = "*", optional = true }
 gprl = { version = "*", git = "https://github.com/TimuriAlvarez/gprl.git", optional = true }
 derive_more = { version = "*", optional = true }
 temp-file = { version = "*", optional = true }
+anyhow = { version = "*", optional = true }
 regex = { version = "*", optional = true }
 unescape = { version = "*", optional = true }
