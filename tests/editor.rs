@@ -2,7 +2,7 @@ use gprl::types::Res;
 
 fn test(c: &str, i: &str, b: bool, p: &str, r: &str, l: &[&str]) -> Res {
   let haystack: String = std::fs::read_to_string(format!("./tests/data/{c}.txt"))?;
-  let literals: Vec::<String> = l.into_iter().map(|lit: &&str| lit.to_string()).collect();
+  let literals: Vec<String> = l.into_iter().map(|lit: &&str| lit.to_string()).collect();
   let result: String = swiss::editor::editor(b, &haystack, p, r, &literals)?;
   let expected: String = std::fs::read_to_string(format!("./tests/data/{c}/{i}.txt"))?;
   assert_eq!(result, expected, "{i}");

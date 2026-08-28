@@ -24,7 +24,7 @@ pub struct CLI {
   replacement: String,
   /// String literals (escaped before being fed to the pattern)
   #[arg(allow_hyphen_values=true)]
-  literals: Vec::<String>,
+  literals: Vec<String>,
 }
 
 fn main() -> gprl::types::Res {

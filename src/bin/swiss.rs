@@ -8,10 +8,10 @@ pub struct CLI {
   #[arg(long="log-level", default_value="info")]
   filter: tracing::Level,
   /// Recipe book's name
-  book: Option::<String>,
+  book: Option<String>,
   /// Recipe's arguments
   #[arg(allow_hyphen_values=true)]
-  args: Vec::<String>,
+  args: Vec<String>,
 }
 
 fn main() -> gprl::types::Res {

@@ -4,11 +4,11 @@ mod viewer;
 mod shell;
 mod extensions;
 
-fn books_path() -> std::io::Result::<std::path::PathBuf> {
+fn books_path() -> std::io::Result<std::path::PathBuf> {
   xdg::BaseDirectories::with_prefix(env!("CARGO_PKG_NAME")).create_data_directory("books")
 }
 
-fn contents(book: &str) -> Res::<String> {
+fn contents(book: &str) -> Res<String> {
   let local: std::path::PathBuf = std::path::PathBuf::from(book);
   let path: std::path::PathBuf = if local.exists() { local } else {
     books_path()?.join(&format!("{book}.just"))
@@ -18,10 +18,10 @@ fn contents(book: &str) -> Res::<String> {
   Ok(format!("{book}\n{swiss}"))
 }
 
-fn list_books() -> Res::<String> {
+fn list_books() -> Res<String> {
   use lexical_sort::StringSort;
-  let entries: Vec::<dirwalk::Entry> = dirwalk::WalkBuilder::new(books_path()?).build()?.entries;
-  let mut books: Vec::<String> = vec![];
+  let entries: Vec<dirwalk::Entry> = dirwalk::WalkBuilder::new(books_path()?).build()?.entries;
+  let mut books: Vec<String> = vec![];
   for entry in entries {
     if entry.extension() == Some("just") {
       books.push(entry.relative_path[..entry.relative_path.len()-"just".len()-1].to_string());
@@ -31,7 +31,7 @@ fn list_books() -> Res::<String> {
   Ok(books.join("\n"))
 }
 
-pub fn viewer(book: &Option::<String>) -> Res::<bool> {
+pub fn viewer(book: &Option<String>) -> Res<bool> {
   let mut default: bool = false;
   let markdown: String = if let Some(book) = book {
     let contents: String = extensions::apply(&contents(book)?)?;

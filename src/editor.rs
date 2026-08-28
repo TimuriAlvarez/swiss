@@ -7,10 +7,10 @@ enum ReBuilder<'a> {
 }
 
 impl<'a> ReBuilder<'a> {
-  const REFERENCE: std::sync::LazyLock::<regex::Regex> = std::sync::LazyLock::new(||
+  const REFERENCE: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(||
     regex::Regex::new(r"(&?)&([[:digit:]]+):?").expect("Failed to construct a regex")
   );
-  pub fn build(self) -> Result::<regex::Regex, regex::Error> {
+  pub fn build(self) -> Result<regex::Regex, regex::Error> {
     match self {
       ReBuilder::Literals(s) => regex::Regex::new(&format!(r"({})", s.join(r")\n("))),
       ReBuilder::Pattern(s) => regex::Regex::new(&format!(r"(?m){s}")),
@@ -18,7 +18,7 @@ impl<'a> ReBuilder<'a> {
   }
 }
 
-fn replace_all(extract: bool, re: &regex::Regex, haystack: &str, f: impl Fn(&regex::Captures) -> Res::<String>) -> Res::<String> {
+fn replace_all(extract: bool, re: &regex::Regex, haystack: &str, f: impl Fn(&regex::Captures) -> Res<String>) -> Res<String> {
   // Initialize empty string, set the text cursor to the very beginning
   let mut new: String = String::new();
   let mut last_match: usize = 0;
@@ -37,9 +37,9 @@ fn replace_all(extract: bool, re: &regex::Regex, haystack: &str, f: impl Fn(&reg
   Ok(new)
 }
 
-fn expand_refs_caps(expression_haystack: &str, expression_caps: &regex::Captures, escape: bool) -> Res::<String> {
+fn expand_refs_caps(expression_haystack: &str, expression_caps: &regex::Captures, escape: bool) -> Res<String> {
   // Replace all occurrences of the reference pattern with the corresponding current capture
-  Ok(replace_all(false, &ReBuilder::REFERENCE, expression_haystack, |caps: &regex::Captures| -> Res::<String> {
+  Ok(replace_all(false, &ReBuilder::REFERENCE, expression_haystack, |caps: &regex::Captures| -> Res<String> {
     // Fetch prepended state and index value
     let prepended: bool = caps[1].len() > 0usize;
     let index: usize = caps[2].parse::<usize>()?;
@@ -60,11 +60,11 @@ fn expand_refs_caps(expression_haystack: &str, expression_caps: &regex::Captures
   })?)
 }
 
-fn expand_refs_values(expression_haystack: &str, literals: &[String]) -> Res::<String> {
+fn expand_refs_values(expression_haystack: &str, literals: &[String]) -> Res<String> {
   // Bundle literals into a haystack
   let haystack: String = literals.join("\n");
   // Build a special regex for these literals
-  let literals: Vec::<String> = literals.into_iter().map(|literals: &String| regex::escape(literals)).collect();
+  let literals: Vec<String> = literals.into_iter().map(|literals: &String| regex::escape(literals)).collect();
   let re: regex::Regex = ReBuilder::Literals(&literals).build()?;
   // Convert literals into captures
   let expression_caps: regex::Captures = re.captures(&haystack).unwrap();
@@ -72,7 +72,7 @@ fn expand_refs_values(expression_haystack: &str, literals: &[String]) -> Res::<S
   expand_refs_caps(expression_haystack, &expression_caps, true)
 }
 
-pub fn editor(extract: bool, haystack: &str, pattern: &str, replacement: &str, literals: &[String]) -> Res::<String> {
+pub fn editor(extract: bool, haystack: &str, pattern: &str, replacement: &str, literals: &[String]) -> Res<String> {
   // Expand all references from the pattern to literals
   let pat: String = expand_refs_values(pattern, literals)?;
   event!(Level::DEBUG, "pattern = {pat:?}");
@@ -83,7 +83,7 @@ pub fn editor(extract: bool, haystack: &str, pattern: &str, replacement: &str, l
   let rep: String = unescape::unescape(replacement).expect(&format!("Failed to unescape {replacement:?} string"));
   event!(Level::DEBUG, "replacement = {rep:?}");
   // Replace all occurrences of the pattern with the replacement
-  Ok(replace_all(extract, &re, haystack, |caps: &regex::Captures| -> Res::<String> {
+  Ok(replace_all(extract, &re, haystack, |caps: &regex::Captures| -> Res<String> {
     // Expand all references from the replacement to current captures
     event!(Level::DEBUG, "captures = {caps:?}");
     Ok(expand_refs_caps(&rep, caps, false)?)

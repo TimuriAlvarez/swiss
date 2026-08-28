@@ -26,7 +26,7 @@ struct AppViewModel {
   repository: String,
 }
 
-pub fn app(books: &str) -> Res::<String> {
+pub fn app(books: &str) -> Res<String> {
   Ok(AppViewModel {
     name: env!("CARGO_PKG_NAME").to_string(),
     version: env!("CARGO_PKG_VERSION").to_string(),
@@ -50,7 +50,7 @@ struct BookViewModel {
   recipes: String,
 }
 
-pub fn book(book: &str, recipes: &str) -> Res::<String> {
+pub fn book(book: &str, recipes: &str) -> Res<String> {
   Ok(BookViewModel {
     name: book.to_string(),
     recipes: list(recipes),
