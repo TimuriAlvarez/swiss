@@ -23,7 +23,7 @@ mod optional_arguments {
     let sep: &str = if argc == 0 { "" } else { ", " };
     let argv: String = if argc == 0 { String::new() } else {
       // A pattern that matches either a quoted string (which may contain commas) or an unquoted non-comma sequence
-      vec![r#"(?:"[^"]*"|'[^']*'|[^,]+)"#; argc].join(r",\s")
+      vec![format!(r#"(?:{EXPRESSION})"#); argc].join(r",\s")
     };
     let pattern: String = format!(r"&1\(({argv})\)");
     let replacement: String = format!("{name}(&1{sep}{value})");
