@@ -16,9 +16,9 @@ lv(s) := replace(replace_regex(replace_regex(join_list(s),
 # shelly
 
 __shelly(cmd) := if cmd =~ '^>.*' {
-    shell(replace_regex(cmd, '^>\s+', ''))
+    shell(replace_regex(cmd, '^>\s*', ''))
 } else if cmd =~ '^@.*' {
-    replace_regex(cmd, '^@\s+', '')
+    replace_regex(cmd, '^@\s*', '')
 } else {
     '( echo ' + quote('>' + ' ' + BOLD + cmd + NORMAL) + '; ' + cmd + '; )'
 }
