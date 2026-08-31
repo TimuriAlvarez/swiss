@@ -32,3 +32,9 @@ pub fn get(signature: &str, name: &str, index: usize) -> Res {
   println!("{value}");
   Ok(())
 }
+
+pub fn purge(signature: &str) -> Res {
+  let path: std::path::PathBuf = runtime_path(signature)?;
+  std::fs::remove_dir_all(path)?;
+  Ok(())
+}

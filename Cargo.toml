@@ -7,8 +7,8 @@ repository = "https://github.com/TimuriAlvarez/swiss"
 
 [features]
 cli = ["dep:clap", "clap?/derive", "dep:tracing", "dep:tracing-subscriber"]
-variable = ["dep:gprl", "gprl?/types"]
-runner = ["dep:gprl", "gprl?/types", "dep:xdg", "dep:lexical-sort", "dep:dirwalk", "dep:derive_more", "derive_more?/display", "dep:temp-file", "dep:anyhow"]
+variable = ["dep:gprl", "gprl?/types", "gprl?/fs", "dep:xdg"]
+runner = ["dep:gprl", "gprl?/types", "dep:xdg", "dep:lexical-sort", "dep:dirwalk", "dep:derive_more", "derive_more?/display", "dep:temp-file", "dep:anyhow", "variable"]
 editor = ["dep:gprl", "gprl?/types", "gprl?/fs", "dep:regex", "dep:unescape"]
 default = ["cli", "variable", "runner", "editor"]
 

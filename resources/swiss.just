@@ -16,11 +16,11 @@ lv(s) := replace(replace_regex(replace_regex(join_list(s),
 # shelly
 
 __shelly(cmd) := if cmd =~ '^>.*' {
-    shell(trim(replace_regex(cmd, '^>\s+', '')))
+    shell(replace_regex(cmd, '^>\s+', ''))
 } else if cmd =~ '^@.*' {
-    trim(replace_regex(cmd, '^@\s+', ''))
+    replace_regex(cmd, '^@\s+', '')
 } else {
-    '( echo ' + quote(BLACK + '>' + NORMAL + ' ' + BOLD + cmd + NORMAL) + '; ' + cmd + '; )'
+    '( echo ' + quote('>' + ' ' + BOLD + cmd + NORMAL) + '; ' + cmd + '; )'
 }
 shelly(cmd) := __shelly(join_list(cmd))
 

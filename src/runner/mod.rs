@@ -52,5 +52,8 @@ pub fn viewer(book: &Option<String>) -> Res<bool> {
 pub fn runner(book: &str, args: &[String]) -> Res {
   let contents: String = extensions::apply(&contents(book)?)?;
   let tempfile: temp_file::TempFile = temp_file::with_contents(&contents.into_bytes());
-  shell::run(shell::spawn, shell::JUST, &["--justfile"], Some(&tempfile), args).map(|_| ())
+  let result: Res = shell::run(shell::spawn, shell::JUST, &["--justfile"], Some(&tempfile), args).map(|_| ());
+  let signature: &str = tempfile.path().file_stem().expect("stem extraction failure").to_str().expect("path conversion failure");
+  crate::variable::purge(signature)?;
+  result
 }
