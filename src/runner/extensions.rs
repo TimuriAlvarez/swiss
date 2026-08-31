@@ -3,6 +3,7 @@ use gprl::types::Res;
 const MARKER: char = '=';
 const ID: &str = r"\<.+\>";
 const BLANK: &str = r"[[:blank:]]";
+const LIST_OP: &str = r"\+\+|\+|/";
 const EXPRESSION: &str = r#"\(.*\)|\[.*\]|"[^"]*"|'[^']*'|[^,\s]+"#;
 
 mod optional_arguments {
@@ -79,6 +80,12 @@ mod runtime_variables {
     crate::editor::editor(false, haystack, &pattern, &replacement, &[])
   }
 
+  fn regex_prefixed_assignment(haystack: &str) -> Res<String> {
+    let pattern: String = format!(r"^({BLANK}+)({ID}){BLANK}*({LIST_OP}):={BLANK}*({EXPRESSION})$");
+    let replacement: String = format!("&1&2 := (var(&2) &3 &4)");
+    crate::editor::editor(false, haystack, &pattern, &replacement, &[])
+  }
+
   fn regex_assignments(haystack: &str) -> Res<String> {
     let pattern: String = format!(r"^({BLANK}+)({ID}){BLANK}*:={BLANK}*({EXPRESSION})$");
     let replacement: String = format!("&1{{{{ set(&2, &3) }}}}");
@@ -88,6 +95,7 @@ mod runtime_variables {
   pub fn process(content: &str) -> gprl::types::Res<String> {
     let mut haystack: String = content.to_string();
     haystack = regex_declarations(&haystack)?;
+    haystack = regex_prefixed_assignment(&haystack)?;
     haystack = regex_assignments(&haystack)?;
     Ok(haystack)
   }
