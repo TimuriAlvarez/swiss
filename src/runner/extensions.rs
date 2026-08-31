@@ -3,7 +3,7 @@ use gprl::types::Res;
 const MARKER: char = '=';
 const ID: &str = r"\<.+\>";
 const BLANK: &str = r"[[:blank:]]";
-const EXPRESSION: &str = r#""[^"]*"|'[^']*'|[^,\n]+"#;
+const EXPRESSION: &str = r#"\(.*\)|\[.*\]|"[^"]*"|'[^']*'|[^,\s]+"#;
 
 mod optional_arguments {
   use super::*;
@@ -70,6 +70,29 @@ mod optional_arguments {
   }
 }
 
+mod runtime_variables {
+  use super::*;
+
+  fn regex_declarations(haystack: &str) -> Res<String> {
+    let pattern: String = format!(r"^local{BLANK}+({ID}){BLANK}*:={BLANK}*({EXPRESSION})$");
+    let replacement: String = format!("&1 := set('&1', &2) && '&1'");
+    crate::editor::editor(false, haystack, &pattern, &replacement, &[])
+  }
+
+  fn regex_assignments(haystack: &str) -> Res<String> {
+    let pattern: String = format!(r"^({BLANK}+)({ID}){BLANK}*:={BLANK}*({EXPRESSION})$");
+    let replacement: String = format!("&1{{{{ set(&2, &3) }}}}");
+    crate::editor::editor(false, haystack, &pattern, &replacement, &[])
+  }
+
+  pub fn process(content: &str) -> gprl::types::Res<String> {
+    let mut haystack: String = content.to_string();
+    haystack = regex_declarations(&haystack)?;
+    haystack = regex_assignments(&haystack)?;
+    Ok(haystack)
+  }
+}
+
 pub fn apply(content: &str) -> gprl::types::Res<String> {
-  optional_arguments::process(content)
+  optional_arguments::process(&runtime_variables::process(content)?)
 }

@@ -27,7 +27,7 @@ enum Subcommand {
     value: Vec<String>,
   },
   /// Get next index
-  Index {
+  Next {
     /// Current index
     index: Option<usize>,
   },
@@ -43,7 +43,7 @@ fn main() -> gprl::types::Res {
   tracing_subscriber::fmt().with_max_level(app.filter).init();
   match app.command {
     Subcommand::Set { value: values } => swiss::variable::set(&app.signature, &app.name, &values),
-    Subcommand::Index { index: current } => swiss::variable::next(&app.signature, &app.name, current),
+    Subcommand::Next { index: current } => swiss::variable::next(&app.signature, &app.name, current),
     Subcommand::Get { index } => swiss::variable::get(&app.signature, &app.name, index),
   }
 }
