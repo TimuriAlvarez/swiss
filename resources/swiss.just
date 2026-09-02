@@ -16,21 +16,19 @@ lv(s) := replace(replace_regex(replace_regex(join_list(s),
 # shelly
 
 __shelly(cmd) := if cmd =~ '^>.*' {
-    shell(replace_regex(cmd, '^>\s*', ''))
+    shell(replace_regex(cmd, '^>[[:blank:]]*', ''))
 } else if cmd =~ '^@.*' {
-    replace_regex(cmd, '^@\s*', '')
+    replace_regex(cmd, '^@[[:blank:]]*', '')
 } else {
-    '( echo ' + quote('>' + ' ' + BOLD + cmd + NORMAL) + '; ' + cmd + '; )'
+    '( echo ' + quote('> ' + BOLD + cmd + NORMAL) + '; ' + cmd + '; )'
 }
 shelly(cmd) := __shelly(join_list(cmd))
 
 # variables
 
 __signature := file_stem(justfile())
-__idx(name, signature, index) := shelly('> swiss-vars' ++ quote(signature) ++ quote(name) ++ 'next' ++ quote(index))
 set(name, value, signature=__signature) := shelly('> swiss-vars' ++ quote(signature) ++ quote(name) ++ 'set' ++ quote(value))
+__var(name, signature, index) := if index != '' { var(name, signature, index) }
 var(name, signature=__signature, index=[]) := (if index {
     shelly('> swiss-vars' ++ quote(signature) ++ quote(name) ++ 'get' ++ quote(index))
-}) ++ (if __idx(name, signature, index) != '' {
-    var(name, signature, __idx(name, signature, index))
-})
+}) ++ __var(name, signature, shelly('> swiss-vars' ++ quote(signature) ++ quote(name) ++ 'next' ++ quote(index)))
