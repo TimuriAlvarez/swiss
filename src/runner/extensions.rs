@@ -5,7 +5,7 @@ const MARKER: char = '=';
 const ID: &str = r"\<.+\>";
 const BLANK: &str = r"[[:blank:]]";
 const LIST_OP: &str = r"\+\+|\+|/";
-const EXPRESSION: &str = r#"\(.*\)|\[.*\]|"[^"]*"|'[^']*'|[^,\s]+"#;
+const EXPRESSION: &str = r#"\(.*\)|\[.*\]|"[^"]*"|'[^']*'|[^,\(\)\s]+"#;
 
 mod optional_arguments {
   use super::*;
@@ -25,7 +25,7 @@ mod optional_arguments {
     let sep: &str = if argc == 0 { "" } else { ", " };
     let argv: String = if argc == 0 { String::new() } else {
       // A pattern that matches either a quoted string (which may contain commas) or an unquoted non-comma sequence
-      vec![format!(r#"(?:{EXPRESSION})"#); argc].join(r",\s")
+      vec![format!(r#"(?:{EXPRESSION})"#); argc].join(&format!(r",{BLANK}*"))
     };
     let pattern: String = format!(r"&1\(({argv})\)");
     let replacement: String = format!("{name}(&1{sep}{value})");
