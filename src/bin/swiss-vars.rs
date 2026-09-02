@@ -23,7 +23,7 @@ enum Subcommand {
   /// Set variable's value
   Set {
     /// Variable's value
-    #[arg()]
+    #[arg(allow_hyphen_values=true)]
     value: Vec<String>,
   },
   /// Get next index

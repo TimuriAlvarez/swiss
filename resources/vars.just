@@ -39,5 +39,14 @@ test-local:
     a5 ++:= v5
     {{ self }} test-local
 
+v6 := '--hello--'
+local a6 := v6
+
+[private]
+test-2:
+    a6 := v6
+    {{ assert(var(a6) == v6) }}
+    echo {{ quote(var(a6)) }}
+
 [default]
-_: test-1
+test: test-1 test-2

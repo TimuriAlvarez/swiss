@@ -41,4 +41,4 @@ test-5:
     {{ assert(foo-3(',   ', '   ,', '*') == foo-3(',   ', '   ,')) }}
 
 [default]
-_: test-1 test-2 test-3 test-4 test-5
+test: test-1 test-2 test-3 test-4 test-5
