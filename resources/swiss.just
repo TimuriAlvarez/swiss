@@ -26,9 +26,8 @@ shelly(cmd) := __shelly(join_list(cmd))
 
 # variables
 
-__signature := file_stem(justfile())
-set(name, value, signature=__signature) := shelly('> swiss-vars' ++ quote(signature) ++ quote(name) ++ 'set' ++ quote(value))
-__var(name, signature, index) := if index != '' { var(name, signature, index) }
-var(name, signature=__signature, index=[]) := (if index {
+__set(signature, name, value) := shelly('> swiss-vars' ++ quote(signature) ++ quote(name) ++ 'set' ++ quote(value))
+__nxt(signature, name, index) := if index != '' { __get(signature, name, index) }
+__get(signature, name, index) := (if index {
     shelly('> swiss-vars' ++ quote(signature) ++ quote(name) ++ 'get' ++ quote(index))
-}) ++ __var(name, signature, shelly('> swiss-vars' ++ quote(signature) ++ quote(name) ++ 'next' ++ quote(index)))
+}) ++ __nxt(signature, name, shelly('> swiss-vars' ++ quote(signature) ++ quote(name) ++ 'next' ++ quote(index)))

@@ -17,8 +17,7 @@ pub fn set(signature: &str, name: &str, values: &[String]) -> Res {
 
 pub fn next(signature: &str, name: &str, index: Option<usize>) -> Res {
   let path: std::path::PathBuf = runtime_path(signature)?;
-  let len: String = std::fs::read_to_string(path.join(format!("{name}.data")))?;
-  let len: usize = len.parse::<usize>()?;
+  let len: usize = std::fs::read_to_string(path.join(format!("{name}.data"))).map(|len: String| len.parse::<usize>().expect("Datafile is corrupted")).unwrap_or_default();
   let index: usize = index.map(|index: usize| index + 1).unwrap_or_default();
   if index < len {
     println!("{}", index);

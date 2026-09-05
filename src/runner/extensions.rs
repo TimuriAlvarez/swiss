@@ -2,7 +2,7 @@ use gprl::types::Res;
 
 const ANY: &str = r".";
 const MARKER: char = '=';
-const ID: &str = r"\<.+\>";
+const WORD: &str = r"\<(?:[[:word:]]|-)+\>";
 const BLANK: &str = r"[[:blank:]]";
 const LIST_OP: &str = r"\+\+|\+|/";
 const EXPRESSION: &str = r#"\(.*\)|\[.*\]|"[^"]*"|'[^']*'|[^,\(\)\s]+"#;
@@ -11,13 +11,13 @@ mod optional_arguments {
   use super::*;
 
   fn regex_declarations(haystack: &str) -> Res<String> {
-    let pattern: String = format!(r"^({ID})\((.*{MARKER}.*)\)({BLANK}*:={BLANK}*.*)$");
+    let pattern: String = format!(r"^({WORD})\(({ANY}*{MARKER}{ANY}*)\)({BLANK}*:={BLANK}*{ANY}*)$");
     let replacement: String = format!("&1{MARKER}&2\n");
     crate::editor::editor(true, haystack, &pattern, &replacement, &[])
   }
 
   fn regex_value(haystack: &str) -> Res<String> {
-    let pattern: String = format!(r"^({EXPRESSION}).*$");
+    let pattern: String = format!(r"^({EXPRESSION}){ANY}*$");
     crate::editor::editor(true, haystack, &pattern, "&1", &[])
   }
 
@@ -33,7 +33,7 @@ mod optional_arguments {
   }
 
   fn regex_truncate(haystack: &str, name: &str, standard: &str) -> Res<String> {
-    let pattern: String = format!(r"^\<(&1)\>\(.*\)({BLANK}*:={BLANK}*.*)$");
+    let pattern: String = format!(r"^\<(&1)\>\({ANY}*\)({BLANK}*:={BLANK}*{ANY}*)$");
     let replacement: String = format!("&1({standard})&2");
     crate::editor::editor(false, haystack, &pattern, &replacement, &[name.to_string()])
   }
@@ -75,33 +75,38 @@ mod optional_arguments {
 mod runtime_variables {
   use super::*;
 
-  fn regex_declarations(haystack: &str) -> Res<String> {
-    let pattern: String = format!(r"^local{BLANK}+({ID}){BLANK}*:={BLANK}*({ANY}*)$");
-    let replacement: String = format!("&1 := set('&1', (&2)) && '&1'");
+  fn regex_prefixed_assignments(haystack: &str, global: bool) -> Res<String> {
+    let signature: String = if global { format!(r"({WORD}::)") } else { format!(r"()") };
+    let pattern: String = format!(r"^({BLANK}+){signature}({WORD}){BLANK}*({LIST_OP}):={BLANK}*({ANY}*)$");
+    let replacement: String = format!("&1&2&3 := var(&2&3) &4 &5");
     crate::editor::editor(false, haystack, &pattern, &replacement, &[])
   }
 
-  fn regex_prefixed_assignment(haystack: &str) -> Res<String> {
-    let pattern: String = format!(r"^({BLANK}+)({ID}){BLANK}*({LIST_OP}):={BLANK}*({ANY}*)$");
-    let replacement: String = format!("&1&2 := var(&2) &3 &4");
+  fn regex_assignments(haystack: &str, global: bool) -> Res<String> {
+    let signature: String = if global { format!(r"({WORD})::") } else { format!(r"()") };
+    let pattern: String = format!(r"^({BLANK}+){signature}({WORD}){BLANK}*:={BLANK}*({ANY}*)$");
+    let replacement: String = format!("&1{{{{ __set({}, '&3', &4) }}}}", if global { "'&2'" } else { "file_stem(justfile())" });
     crate::editor::editor(false, haystack, &pattern, &replacement, &[])
   }
 
-  fn regex_assignments(haystack: &str) -> Res<String> {
-    let pattern: String = format!(r"^({BLANK}+)({ID}){BLANK}*:={BLANK}*({ANY}*)$");
-    let replacement: String = format!("&1{{{{ set(&2, (&3)) }}}}");
+  fn regex_access(haystack: &str, global: bool) -> Res<String> {
+    let signature: String = if global { format!(r"({WORD})::") } else { format!(r"()") };
+    let pattern: String = format!(r"var\({signature}({WORD})\)");
+    let replacement: String = format!("__get({}, '&2', [])", if global { "'&1'" } else { "file_stem(justfile())" });
     crate::editor::editor(false, haystack, &pattern, &replacement, &[])
   }
 
-  pub fn process(content: &str) -> gprl::types::Res<String> {
+  pub fn process(content: &str) -> Res<String> {
     let mut haystack: String = content.to_string();
-    haystack = regex_declarations(&haystack)?;
-    haystack = regex_prefixed_assignment(&haystack)?;
-    haystack = regex_assignments(&haystack)?;
+    for global in [true, false] {
+      haystack = regex_prefixed_assignments(&haystack, global)?;
+      haystack = regex_assignments(&haystack, global)?;
+      haystack = regex_access(&haystack, global)?;
+    }
     Ok(haystack)
   }
 }
 
-pub fn apply(content: &str) -> gprl::types::Res<String> {
-  optional_arguments::process(&runtime_variables::process(content)?)
+pub fn apply(content: &str) -> Res<String> {
+  runtime_variables::process(&optional_arguments::process(content)?)
 }

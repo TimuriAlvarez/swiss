@@ -1,52 +1,56 @@
-v1 := []
-v2 := ''
-v3 := '*'
-v4 := ['a', 'b', 'c']
-v5 := justfile()
-
-local a1 := v1 ++ v1
-local a2 := v2 ++ v2
-local a3 := v3 ++ v3
-local a4 := v4 ++ v4
-local a5 := v5 ++ v5
+a1 := []
+a2 := ''
+a3 := '--hello--'
+a4 := ['a', 'b', 'c']
+a5 := justfile()
 
 [private]
-test-local:
-    {{ assert(var(a1) == v1 ++ v1) }}
-    {{ assert(var(a2) == v2 ++ v2) }}
-    {{ assert(var(a3) == v3 ++ v3) }}
-    {{ assert(var(a4) == v4 ++ v4) }}
-    {{ assert(var(a5) == v5 ++ v5) }}
+local-test:
+    {{ assert(var(v1) == a1 ++ a1) }}
+    {{ assert(var(v2) == a2 ++ a2) }}
+    {{ assert(var(v3) == a3 ++ a3) }}
+    {{ assert(var(v4) == a4 ++ a4) }}
+    {{ assert(var(v5) == a5 ++ a5) }}
 
 [private]
-@test-1:
-    {{ self }} test-local
-    a1 := v1 ++ v1
-    a2 := v2 ++ v2
-    a3 := v3 ++ v3
-    a4 := v4 ++ v4
-    a5 := v5 ++ v5
-    {{ self }} test-local
-    a1 := v1
-    a2 := v2
-    a3 := v3
-    a4 := v4
-    a5 := v5
-    a1 ++:= v1
-    a2 ++:= v2
-    a3 ++:= v3
-    a4 ++:= v4
-    a5 ++:= v5
-    {{ self }} test-local
-
-v6 := '--hello--'
-local a6 := v6
+local-1: && local-test
+    v1 := a1 ++ a1
+    v2 := a2 ++ a2
+    v3 := a3 ++ a3
+    v4 := a4 ++ a4
+    v5 := a5 ++ a5
 
 [private]
-test-2:
-    a6 := v6
-    {{ assert(var(a6) == v6) }}
-    echo {{ quote(var(a6)) }}
+local-2: && local-test
+    v1 := a1
+    v2 := a2
+    v3 := a3
+    v4 := a4
+    v5 := a5
+    v1 ++:= a1
+    v2 ++:= a2
+    v3 ++:= a3
+    v4 ++:= a4
+    v5 ++:= a5
+
+[private]
+global-1:
+    sandbox::v1 := a1
+    {{ assert(var(sandbox::v1) == a1) }}
+    sandbox::v1 := a2 ++ a2
+    {{ assert(var(sandbox::v1) == a2 ++ a2) }}
+    sandbox::v1 := a3
+    sandbox::v1 ++:= a3
+    {{ assert(var(sandbox::v1) == a3 ++ a3) }}
+
+[private]
+global-2:
+    {{ assert(var(sandbox::v2) == [] || var(sandbox::v2) == '*') }}
+    sandbox::v2 := if !var(sandbox::v2) { '*' }
+
+[private]
+global-3:
+    {{ assert(var(sandbox::v3) == []) }}
 
 [default]
-test: test-1 test-2
+test: local-1 local-2 global-1 global-2 global-3
