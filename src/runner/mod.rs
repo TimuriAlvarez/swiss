@@ -54,6 +54,6 @@ pub fn runner(book: &str, args: &[String]) -> Res {
   let tempfile: temp_file::TempFile = temp_file::with_contents(&contents.into_bytes());
   let result: Res = shell::run(shell::spawn, shell::JUST, &["--justfile"], Some(&tempfile), args).map(|_| ());
   let signature: &str = tempfile.path().file_stem().expect("stem extraction failure").to_str().expect("path conversion failure");
-  crate::variable::purge(signature)?;
+  crate::variables::purge(signature)?;
   result
 }

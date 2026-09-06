@@ -42,8 +42,8 @@ fn main() -> gprl::types::Res {
   let app: CLI = CLI::parse();
   tracing_subscriber::fmt().with_max_level(app.filter).init();
   match app.command {
-    Subcommand::Set { value: values } => swiss::variable::set(&app.signature, &app.name, &values),
-    Subcommand::Next { index: current } => swiss::variable::next(&app.signature, &app.name, current),
-    Subcommand::Get { index } => swiss::variable::get(&app.signature, &app.name, index),
+    Subcommand::Set { value: values } => swiss::variables::set(&app.signature, &app.name, &values),
+    Subcommand::Next { index: current } => swiss::variables::next(&app.signature, &app.name, current),
+    Subcommand::Get { index } => swiss::variables::get(&app.signature, &app.name, index),
   }
 }

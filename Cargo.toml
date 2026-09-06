@@ -1,16 +1,16 @@
 [package]
 name = "swiss"
-version = "0.14.2"
+version = "0.14.3"
 edition = "2024"
 description = "🐺 Just a script manager"
 repository = "https://github.com/TimuriAlvarez/swiss"
 
 [features]
 cli = ["dep:clap", "clap?/derive", "dep:tracing", "dep:tracing-subscriber"]
-variable = ["dep:gprl", "gprl?/types", "gprl?/fs", "dep:xdg"]
-runner = ["dep:gprl", "gprl?/types", "dep:xdg", "dep:lexical-sort", "dep:dirwalk", "dep:derive_more", "derive_more?/display", "dep:temp-file", "dep:anyhow", "variable"]
+variables = ["dep:gprl", "gprl?/types", "gprl?/fs", "dep:xdg"]
+runner = ["dep:gprl", "gprl?/types", "dep:xdg", "dep:lexical-sort", "dep:dirwalk", "dep:derive_more", "derive_more?/display", "dep:temp-file", "dep:anyhow", "variables"]
 editor = ["dep:gprl", "gprl?/types", "gprl?/fs", "dep:regex", "dep:unescape"]
-default = ["cli", "variable", "runner", "editor"]
+default = ["cli", "variables", "runner", "editor"]
 
 [dependencies]
 clap = { version = "*", optional = true }

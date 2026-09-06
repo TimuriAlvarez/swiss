@@ -1,33 +1,33 @@
 use gprl::types::Res;
 
+mod fs;
+
 fn runtime_path(signature: &str) -> std::io::Result::<std::path::PathBuf> {
   let xdg: xdg::BaseDirectories = xdg::BaseDirectories::with_prefix(env!("CARGO_PKG_NAME"));
   xdg.create_runtime_directory(signature)
 }
 
 pub fn set(signature: &str, name: &str, values: &[String]) -> Res {
-  let len: usize = values.len();
-  let path: std::path::PathBuf = runtime_path(signature)?;
-  for index in 0..len {
-    gprl::fs::write_to_path(path.join(format!("{name}.part{index}")), &values[index])?;
-  }
-  gprl::fs::write_to_path(path.join(format!("{name}.data")), format!("{len}"))?;
-  Ok(())
+  let path: std::path::PathBuf = runtime_path(signature)?.join(name);
+  fs::write_to_path(path, values)
 }
 
 pub fn next(signature: &str, name: &str, index: Option<usize>) -> Res {
-  let path: std::path::PathBuf = runtime_path(signature)?;
-  let len: usize = std::fs::read_to_string(path.join(format!("{name}.data"))).map(|len: String| len.parse::<usize>().expect("Datafile is corrupted")).unwrap_or_default();
+  let path: std::path::PathBuf = runtime_path(signature)?.join(name);
   let index: usize = index.map(|index: usize| index + 1).unwrap_or_default();
-  if index < len {
+  let length: usize = fs::read_length(path).unwrap_or_default();
+  if index > length {
+    anyhow::bail!("index is out of bounds")
+  }
+  if index != length {
     println!("{}", index);
   }
   Ok(())
 }
 
 pub fn get(signature: &str, name: &str, index: usize) -> Res {
-  let path: std::path::PathBuf = runtime_path(signature)?;
-  let value: String = std::fs::read_to_string(path.join(format!("{name}.part{index}")))?;
+  let path: std::path::PathBuf = runtime_path(signature)?.join(name);
+  let value: String = fs::read_value(path, index)?;
   println!("{value}");
   Ok(())
 }
