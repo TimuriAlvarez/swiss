@@ -1,59 +1,86 @@
 use gprl::types::Res;
-use std::io::{Read, Seek, BufWriter, Write};
 
-const USIZE: usize = std::mem::size_of::<usize>();
+const USIZE_BYTES: usize = std::mem::size_of::<usize>();
+const LENGTH_FIELD: usize = 1;
+const EOF_OFFSET: usize = 1;
+
+macro_rules! write {
+  ($mmap:expr, $start:expr, $byte_size:expr, $value:expr) => {
+    {
+      $mmap[$start..$start + $byte_size].copy_from_slice($value);
+      $byte_size
+    }
+  };
+}
 
 pub fn write_to_path<P: AsRef<std::path::Path>>(path: P, values: &[String]) -> Res {
-  let mut file: BufWriter<std::fs::File> = BufWriter::new(std::fs::File::create(path)?);
   let length: usize = values.len();
-  let mut offsets: Vec<usize> = vec![0; length];
-  for i in 0..length {
-    offsets[i] = if i == 0 {
-      (1 + length) * USIZE
-    } else {
-      let value: &[u8] = values[i-1].as_bytes();
-      offsets[i-1] + USIZE + value.len()
-    };
-  }
-  file.write_all(&length.to_ne_bytes())?;
-  for i in 0..length {
-    file.write_all(&offsets[i].to_ne_bytes())?;
-  }
-  for i in 0..length {
-    let value: &[u8] = values[i].as_bytes();
-    file.write_all(&value.len().to_ne_bytes())?;
-    file.write_all(value)?;
-  }
-  file.flush()?;
+  let mut file_size: usize = (LENGTH_FIELD + length + EOF_OFFSET) * USIZE_BYTES;
+  let mut offsets: Vec<usize> = vec![0; length + EOF_OFFSET];
+  (0..length + EOF_OFFSET).for_each(|i: usize| {
+    offsets[i] = if i == 0 { file_size } else {
+      let string_length: usize = values[i-1].as_bytes().len();
+      file_size += string_length;
+      offsets[i-1] + string_length
+    }
+  });
+  // create or truncate the file
+  let file: std::fs::File = std::fs::OpenOptions::new()
+    .read(true)
+    .write(true)
+    .create(true)
+    .truncate(true)
+    .open(path)?;
+  // set file's length and map it
+  file.set_len(file_size as u64)?;
+  let mut mmap: memmap2::MmapMut = unsafe { memmap2::MmapMut::map_mut(&file)? };
+  // write `length` to the file
+  let mut cursor: usize = write!(mmap, 0, USIZE_BYTES, &length.to_ne_bytes());
+  (0..length + EOF_OFFSET).for_each(|i: usize| {
+    cursor += write!(mmap, cursor, USIZE_BYTES, &offsets[i].to_ne_bytes());
+  });
+  // write `values` to the file
+  values.into_iter().for_each(|value: &String| {
+    let value: &[u8] = value.as_bytes();
+    let string_length: usize = value.len();
+    cursor += write!(mmap, cursor, string_length, value);
+  });
   Ok(())
 }
 
+fn file2mmap<P: AsRef<std::path::Path>>(path: P) -> Res<memmap2::Mmap> {
+  // open the file
+  let file: std::fs::File = std::fs::OpenOptions::new()
+    .read(true)
+    .write(false)
+    .open(path)?;
+  // map the file
+  let mmap: memmap2::Mmap = unsafe { memmap2::Mmap::map(&file)? };
+  Ok(mmap)
+}
+
 pub fn read_length<P: AsRef<std::path::Path>>(path: P) -> Res<usize> {
-  let mut file: std::fs::File = std::fs::File::open(path)?;
-  let mut buf: [u8; USIZE] = [0u8; USIZE];
-  file.read_exact(&mut buf)?;
-  Ok(usize::from_ne_bytes(buf))
+  let mmap: memmap2::Mmap = file2mmap(path)?;
+  // read `length` from the file
+  let length: usize = usize::from_ne_bytes(mmap[0..USIZE_BYTES].try_into()?);
+  Ok(length)
 }
 
 pub fn read_value<P: AsRef<std::path::Path>>(path: P, index: usize) -> Res<String> {
-  let mut file: std::fs::File = std::fs::File::open(path)?;
-  let mut buf: [u8; USIZE] = [0; USIZE];
-  file.read_exact(&mut buf)?;
-  let length: usize = usize::from_ne_bytes(buf);
+  let mmap: memmap2::Mmap = file2mmap(path)?;
+  // read `length` from the file
+  let length: usize = usize::from_ne_bytes(mmap[0..USIZE_BYTES].try_into()?);
+  // validate `index`
   if index >= length {
     anyhow::bail!("index is out of bounds")
   }
-  if index != 0 {
-    file.seek(std::io::SeekFrom::Start(((1 + index) * USIZE) as u64))?;
-  }
-  file.read_exact(&mut buf)?;
-  let offset: usize = usize::from_ne_bytes(buf);
-  file.seek(std::io::SeekFrom::Start(offset as u64))?;
-  file.read_exact(&mut buf)?;
-  let size: usize = usize::from_ne_bytes(buf);
-  let mut buf: Vec<u8> = vec![0; size];
-  file.read_exact(&mut buf)?;
-  Ok(String::from_utf8(buf)?)
+  // read `offsets` from the file
+  let start: usize = (LENGTH_FIELD + index) * USIZE_BYTES;
+  let (first, second): (&[u8], &[u8]) = mmap[start..start + 2 * USIZE_BYTES].split_at(USIZE_BYTES);
+  let first: usize = usize::from_ne_bytes(first.try_into()?);
+  let second: usize = usize::from_ne_bytes(second.try_into()?);
+  // read `value` from the file
+  Ok(String::from_utf8(mmap[first..second].to_vec())?)
 }
 
 #[cfg(test)]
@@ -103,9 +130,9 @@ use super::*;
     let mut rng: rand::prelude::ThreadRng = rand::rng();
     let distr: rand::distr::Alphanumeric = rand::distr::Alphanumeric;
     for _ in 0..TEST_LENGTH {
-      let length: usize = rand::random_range(0..TEST_LENGTH);
+      let length: usize = rand::random_range(..TEST_LENGTH);
       let values: Vec<String> = (0..length).map(|_: usize| {
-        let size: usize = rand::random_range(0..TEST_LENGTH);
+        let size: usize = rand::random_range(..TEST_LENGTH);
         (&mut rng).sample_iter(distr).take(size).map(char::from).collect()
       }).collect();
       roundtrip(&values)?;

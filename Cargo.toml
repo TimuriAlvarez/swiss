@@ -1,13 +1,13 @@
 [package]
 name = "swiss"
-version = "0.14.3"
+version = "0.14.4"
 edition = "2024"
 description = "🐺 Just a script manager"
 repository = "https://github.com/TimuriAlvarez/swiss"
 
 [features]
 cli = ["dep:clap", "clap?/derive", "dep:tracing", "dep:tracing-subscriber"]
-variables = ["dep:gprl", "gprl?/types", "gprl?/fs", "dep:xdg"]
+variables = ["dep:gprl", "gprl?/types", "gprl?/fs", "dep:xdg", "dep:memmap2"]
 runner = ["dep:gprl", "gprl?/types", "dep:xdg", "dep:lexical-sort", "dep:dirwalk", "dep:derive_more", "derive_more?/display", "dep:temp-file", "dep:anyhow", "variables"]
 editor = ["dep:gprl", "gprl?/types", "gprl?/fs", "dep:regex", "dep:unescape"]
 default = ["cli", "variables", "runner", "editor"]
@@ -19,6 +19,7 @@ tracing-subscriber = { version = "*", optional = true }
 gprl = { version = "*", git = "https://github.com/TimuriAlvarez/gprl.git", optional = true }
 anyhow = { version = "*", optional = true }
 xdg = { version = "*", optional = true }
+memmap2 = { version = "*", optional = true }
 lexical-sort = { version = "*", optional = true }
 dirwalk = { version = "*", optional = true }
 derive_more = { version = "*", optional = true }
