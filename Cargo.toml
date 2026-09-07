@@ -25,3 +25,7 @@ derive_more = { version = "*", optional = true }
 temp-file = { version = "*", optional = true }
 regex = { version = "*", optional = true }
 unescape = { version = "*", optional = true }
+
+[dev-dependencies]
+rand = { version = "*" }
+temp-file = { version = "*" }

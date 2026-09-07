@@ -55,3 +55,61 @@ pub fn read_value<P: AsRef<std::path::Path>>(path: P, index: usize) -> Res<Strin
   file.read_exact(&mut buf)?;
   Ok(String::from_utf8(buf)?)
 }
+
+#[cfg(test)]
+mod tests {
+  use rand::RngExt;
+
+use super::*;
+  const TEST_LENGTH: usize = 1000;
+
+  fn assert_roundtrip(path: &std::path::Path, values: &[String]) -> Res {
+    assert_eq!(read_length(path)?, values.len(), "length mismatch");
+    for (i, expected) in values.iter().enumerate() {
+      assert_eq!(&read_value(path, i)?, expected, "index {i} mismatch");
+    }
+    Ok(())
+  }
+
+  fn roundtrip(values: &[String]) -> Res {
+    let temp_file: temp_file::TempFile = temp_file::empty();
+    write_to_path(temp_file.path(), values)?;
+    assert_roundtrip(temp_file.path(), values)
+  }
+
+  #[test]
+  fn empty_list() -> Res {
+    roundtrip(&[])
+  }
+
+  #[test]
+  fn empty_strings() -> Res {
+    roundtrip(&[String::new()])?;
+    roundtrip(&[const { String::new() }; TEST_LENGTH])
+  }
+
+  #[test]
+  fn large_values() -> Res {
+    roundtrip(&[
+      "x".repeat(TEST_LENGTH),
+      "y".repeat(TEST_LENGTH),
+      String::new(),
+      "z".repeat(TEST_LENGTH),
+    ])
+  }
+
+  #[test]
+  fn random_roundtrip() -> Res {
+    let mut rng: rand::prelude::ThreadRng = rand::rng();
+    let distr: rand::distr::Alphanumeric = rand::distr::Alphanumeric;
+    for _ in 0..TEST_LENGTH {
+      let length: usize = rand::random_range(0..TEST_LENGTH);
+      let values: Vec<String> = (0..length).map(|_: usize| {
+        let size: usize = rand::random_range(0..TEST_LENGTH);
+        (&mut rng).sample_iter(distr).take(size).map(char::from).collect()
+      }).collect();
+      roundtrip(&values)?;
+    }
+    Ok(())
+  }
+}
