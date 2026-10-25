@@ -24,6 +24,10 @@ __shelly(cmd) := if cmd =~ '^>.*' {
 }
 shelly(cmd) := __shelly(join_list(cmd))
 
+# fold
+
+fold(list) := if list && list != '' { list }
+
 # variables
 
 __set(signature, name, value) := shelly('> swiss-vars' ++ quote(signature) ++ quote(name) ++ 'set' ++ quote(value))
