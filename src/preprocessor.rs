@@ -38,8 +38,8 @@ mod optional_arguments {
     crate::editor::editor(false, haystack, &pattern, &replacement, &[name.to_string()])
   }
 
-  pub fn process(content: &str) -> Res<String> {
-    let mut haystack: String = content.to_string();
+  pub fn process(contents: &str) -> Res<String> {
+    let mut haystack: String = contents.to_string();
     // Extract declarations for user defined functions from justfile
     for declaration in regex_declarations(&haystack)?.lines() {
       // Get function name and it's extended arguments
@@ -96,8 +96,8 @@ mod runtime_variables {
     crate::editor::editor(false, haystack, &pattern, &replacement, &[])
   }
 
-  pub fn process(content: &str) -> Res<String> {
-    let mut haystack: String = content.to_string();
+  pub fn process(contents: &str) -> Res<String> {
+    let mut haystack: String = contents.to_string();
     for global in [true, false] {
       haystack = regex_prefixed_assignments(&haystack, global)?;
       haystack = regex_assignments(&haystack, global)?;
@@ -111,6 +111,10 @@ pub fn has_attribute(contents: &str, attribute: &str) -> Res<bool> {
   Ok(contents.lines().any(|line: &str| line == format!("[{attribute}]")))
 }
 
-pub fn run(content: &str) -> Res<String> {
-  runtime_variables::process(&optional_arguments::process(content)?)
+pub fn run(contents: &str) -> Res<String> {
+  let swiss: &str = include_str!("../resources/swiss.just");
+  let mut contents: String = format!("{contents}\n{swiss}");
+  contents = optional_arguments::process(&contents)?;
+  contents = runtime_variables::process(&contents)?;
+  Ok(contents)
 }
