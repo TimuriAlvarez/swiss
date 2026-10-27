@@ -45,15 +45,20 @@ fn list_books() -> Res<Vec<String>> {
 pub fn viewer(book: &Option<String>) -> Res<bool> {
   let mut default: bool = false;
   let contents: String = if let Some(book) = book {
+    if shell::version(JUST).is_err() {
+      anyhow::bail!("missing dependency: {JUST}")
+    }
     let contents: String = contents(book)?;
     default = crate::preprocessor::has_attribute(&contents, "default")?;
     markdown::book(book, &list_recipes(book, contents)?)
   } else {
     markdown::default(&list_books()?)
   }?;
-  let tempfile: temp_file::TempFile = temp_file::with_contents(&contents.into_bytes());
-  if shell::runner(shell::spawn, GLOW, &["--width", "0", tempfile.path().to_str().expect("path conversion failed")]).is_err() {
-    println!("{}", std::fs::read_to_string(tempfile.path())?);
+  if shell::version(GLOW).is_ok() {
+    let tempfile: temp_file::TempFile = temp_file::with_contents(&contents.into_bytes());
+    shell::runner(shell::spawn, GLOW, &["--width", "0", tempfile.path().to_str().expect("path conversion failed")])?;
+  } else {
+    println!("{contents}")
   }
   Ok(default)
 }

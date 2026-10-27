@@ -13,6 +13,10 @@ pub struct State {
   pub stderr: String,
 }
 
+pub fn version(program: &str) -> Res<State> {
+  runner(output, program, &["--version"])
+}
+
 pub fn runner(shell: impl Fn(std::process::Command) -> std::io::Result<std::process::Output>, program: &str, args: &[&str]) -> Res<State> {
   let mut command: std::process::Command = std::process::Command::new(program);
   args.into_iter().for_each(|arg: &&str| { command.arg(arg); });
