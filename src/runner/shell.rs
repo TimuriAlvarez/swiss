@@ -35,3 +35,15 @@ pub fn spawn(mut command: std::process::Command) -> std::io::Result<std::process
     stderr: Vec::new(),
   })
 }
+
+pub fn propagate(state: State) -> Res {
+  if state.status.success() { return Ok(()) }
+  let result: String = state.to_string();
+  if !result.is_empty() {
+    println!("{result}");
+  }
+  let code: i32 = if let Some(code) = state.status.code() { code } else {
+    anyhow::bail!("program was terminated by a signal")
+  };
+  std::process::exit(code);
+}
