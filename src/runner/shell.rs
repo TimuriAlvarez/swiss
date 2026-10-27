@@ -8,9 +8,8 @@ pub fn output(mut command: std::process::Command) -> std::io::Result<std::proces
 }
 
 pub fn spawn(mut command: std::process::Command) -> std::io::Result<std::process::Output> {
-  let status: std::process::ExitStatus = command.spawn()?.wait()?;
   Ok(std::process::Output {
-    status,
+    status: command.spawn()?.wait()?,
     stdout: Vec::new(),
     stderr: Vec::new(),
   })
