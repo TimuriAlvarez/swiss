@@ -1,10 +1,5 @@
 use gprl::types::Res;
 
-fn list(list: &str) -> String {
-  let list: &str = list.trim();
-  if list == "" { "there are none" } else { list }.to_string()
-}
-
 #[derive(derive_more::Display)]
 #[display(r#"# `{version}` {name}
 
@@ -18,7 +13,7 @@ fn list(list: &str) -> String {
 
 {repository}
 "#)]
-struct AppViewModel {
+struct DefaultMarkdown {
   name: String,
   version: String,
   description: String,
@@ -26,12 +21,12 @@ struct AppViewModel {
   repository: String,
 }
 
-pub fn app(books: &str) -> Res<String> {
-  Ok(AppViewModel {
+pub fn default(books: &[String]) -> Res<String> {
+  Ok(DefaultMarkdown {
     name: env!("CARGO_PKG_NAME").to_string(),
     version: env!("CARGO_PKG_VERSION").to_string(),
     description: env!("CARGO_PKG_DESCRIPTION").to_string(),
-    books: list(books),
+    books: if books.is_empty() { format!("there are none") } else { books.join("\n") },
     repository: env!("CARGO_PKG_REPOSITORY").to_string(),
   }.to_string())
 }
@@ -45,14 +40,14 @@ pub fn app(books: &str) -> Res<String> {
 {recipes}
 ```
 "#)]
-struct BookViewModel {
+struct BookMarkdown {
   name: String,
   recipes: String,
 }
 
 pub fn book(book: &str, recipes: &str) -> Res<String> {
-  Ok(BookViewModel {
+  Ok(BookMarkdown {
     name: book.to_string(),
-    recipes: list(recipes),
+    recipes: recipes.trim_end().to_string(),
   }.to_string())
 }
