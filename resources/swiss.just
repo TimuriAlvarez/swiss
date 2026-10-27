@@ -4,7 +4,7 @@ set no-cd
 
 # self
 
-self := 'just --justfile' ++ justfile()
+self := 'just' ++ '--justfile' ++ justfile()
 
 # literal value
 
