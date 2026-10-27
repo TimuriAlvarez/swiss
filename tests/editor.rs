@@ -32,34 +32,34 @@ fn partial_match() -> Res {
   test("matches", "d2", false, r"^.*aba.*$", r"ccc ccc", &[])?;
   test("matches", "d3", false, r"^.*bab.*$", r"ccc ccc", &[])?;
   test("matches", "d4", false, r"^.*bab.*\n.*$", r"ccc ccc", &[])?;
-  test("matches", "e1", false, r"^(.*)baa(.*)$", r"&1ccc&2", &[])?;
-  test("matches", "e2", false, r"^(.*) (.*)$", r"&1_&2", &[])?;
-  test("matches", "e3", false, r"^(.*)bab(.*)$", r"&1ccc&2", &[])?;
-  test("matches", "e4", false, r"^(.*)bab(.*)\n(.*)$", r"&1ccc&2&3", &[])?;
+  test("matches", "e1", false, r"^(.*)baa(.*)$", r"${1}ccc${2}", &[])?;
+  test("matches", "e2", false, r"^(.*) (.*)$", r"${1}_${2}", &[])?;
+  test("matches", "e3", false, r"^(.*)bab(.*)$", r"${1}ccc${2}", &[])?;
+  test("matches", "e4", false, r"^(.*)bab(.*)\n(.*)$", r"${1}ccc${2}${3}", &[])?;
   Ok(())
 }
 
 #[test]
 fn literals() -> Res {
-  test("literals", "a1", false, r"^&1$", r"ccc.ccc", &["abc.abc"])?;
-  test("literals", "a2", false, r"\<&1\>", r"dict", &["val"])?;
-  test("literals", "a3", false, r"^(&1)$", r"&1\n&1", &["abc.abc"])?;
-  test("literals", "a4", false, r"^&1.&1$", r"&0\n&0", &["abc"])?;
-  test("literals", "a5", false, r"^(&1 = ).*$", r"&1:255 # swiss &0", &["val.a"])?;
-  test("literals", "a6", false, r"^.* # swiss (&1.*)$", r"&1", &["val.b"])?;
+  test("literals", "a1", false, r"^$1$", r"ccc.ccc", &["abc.abc"])?;
+  test("literals", "a2", false, r"\<$1\>", r"dict", &["val"])?;
+  test("literals", "a3", false, r"^($1)$", r"$1\n$1", &["abc.abc"])?;
+  test("literals", "a4", false, r"^$1.$1$", r"$0\n$0", &["abc"])?;
+  test("literals", "a5", false, r"^($1 = ).*$", r"${1}255 # swiss $0", &["val.a"])?;
+  test("literals", "a6", false, r"^.* # swiss ($1.*)$", r"$1", &["val.b"])?;
   Ok(())
 }
 
 #[test]
 fn extract() -> Res {
-  test("extract", "a1", true, r"^&1$", r"&0\n", &["efg"])?;
-  test("extract", "a2", true, r"^&1$", r"&0\n", &["abcd"])?;
-  test("extract", "a3", true, r"^&1(.*)$", r"&1\n", &["1234"])?;
+  test("extract", "a1", true, r"^$1$", r"$0\n", &["efg"])?;
+  test("extract", "a2", true, r"^$1$", r"$0\n", &["abcd"])?;
+  test("extract", "a3", true, r"^$1(.*)$", r"$1\n", &["1234"])?;
   Ok(())
 }
 
 #[test]
 fn references() -> Res {
-  test("extract", "b1", true, r"^efg$", r"&&0&0&&0\n", &[])?;
+  test("extract", "b1", true, r"^efg$", r"$$0$0$$0\n", &[])?;
   Ok(())
 }

@@ -12,13 +12,13 @@ mod optional_arguments {
 
   fn regex_declarations(haystack: &str) -> Res<String> {
     let pattern: String = format!(r"^({WORD})\(({ANY}*{MARKER}{ANY}*)\)({BLANK}*:={BLANK}*{ANY}*)$");
-    let replacement: String = format!("&1{MARKER}&2\n");
+    let replacement: String = format!("$1{MARKER}$2\n");
     crate::editor::editor(true, haystack, &pattern, &replacement, &[])
   }
 
   fn regex_value(haystack: &str) -> Res<String> {
     let pattern: String = format!(r"^({EXPRESSION}){ANY}*$");
-    crate::editor::editor(true, haystack, &pattern, "&1", &[])
+    crate::editor::editor(true, haystack, &pattern, "$1", &[])
   }
 
   fn regex_fill_out(haystack: &str, name: &str, argc: usize, value: &str) -> Res<String> {
@@ -27,14 +27,14 @@ mod optional_arguments {
       // A pattern that matches either a quoted string (which may contain commas) or an unquoted non-comma sequence
       vec![format!(r#"(?:{EXPRESSION})"#); argc].join(&format!(r",{BLANK}*"))
     };
-    let pattern: String = format!(r"&1\(({argv})\)");
-    let replacement: String = format!("{name}(&1{sep}{value})");
+    let pattern: String = format!(r"$1\(({argv})\)");
+    let replacement: String = format!("{name}($1{sep}{value})");
     crate::editor::editor(false, haystack, &pattern, &replacement, &[name.to_string()])
   }
 
   fn regex_truncate(haystack: &str, name: &str, standard: &str) -> Res<String> {
-    let pattern: String = format!(r"^\<(&1)\>\({ANY}*\)({BLANK}*:={BLANK}*{ANY}*)$");
-    let replacement: String = format!("&1({standard})&2");
+    let pattern: String = format!(r"^\<($1)\>\({ANY}*\)({BLANK}*:={BLANK}*{ANY}*)$");
+    let replacement: String = format!("$1({standard})$2");
     crate::editor::editor(false, haystack, &pattern, &replacement, &[name.to_string()])
   }
 
@@ -78,21 +78,21 @@ mod runtime_variables {
   fn regex_prefixed_assignments(haystack: &str, global: bool) -> Res<String> {
     let signature: String = if global { format!(r"({WORD}::)") } else { format!(r"()") };
     let pattern: String = format!(r"^({BLANK}+){signature}({WORD}){BLANK}*({LIST_OP}):={BLANK}*({ANY}*)$");
-    let replacement: String = format!("&1&2&3 := var(&2&3) &4 &5");
+    let replacement: String = format!("$1$2$3 := var($2$3) $4 $5");
     crate::editor::editor(false, haystack, &pattern, &replacement, &[])
   }
 
   fn regex_assignments(haystack: &str, global: bool) -> Res<String> {
     let signature: String = if global { format!(r"({WORD})::") } else { format!(r"()") };
     let pattern: String = format!(r"^({BLANK}+){signature}({WORD}){BLANK}*:={BLANK}*({ANY}*)$");
-    let replacement: String = format!("&1{{{{ __set({}, '&3', &4) }}}}", if global { "'&2'" } else { "file_stem(justfile())" });
+    let replacement: String = format!("$1{{{{ __set({}, '$3', $4) }}}}", if global { "'$2'" } else { "file_stem(justfile())" });
     crate::editor::editor(false, haystack, &pattern, &replacement, &[])
   }
 
   fn regex_access(haystack: &str, global: bool) -> Res<String> {
     let signature: String = if global { format!(r"({WORD})::") } else { format!(r"()") };
     let pattern: String = format!(r"var\({signature}({WORD})\)");
-    let replacement: String = format!("__get({}, '&2', [])", if global { "'&1'" } else { "file_stem(justfile())" });
+    let replacement: String = format!("__get({}, '$2', [])", if global { "'$1'" } else { "file_stem(justfile())" });
     crate::editor::editor(false, haystack, &pattern, &replacement, &[])
   }
 

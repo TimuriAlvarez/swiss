@@ -8,7 +8,7 @@ enum ReBuilder<'a> {
 
 impl<'a> ReBuilder<'a> {
   const REFERENCE: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(||
-    regex::Regex::new(r"(&?)&([[:digit:]]+):?").expect("Failed to construct a regex")
+    regex::Regex::new(r"\$(\$|\{[[:word:]]+\}|[[:word:]]+)").expect("Failed to construct a regex")
   );
   pub fn build(self) -> Result<regex::Regex, regex::Error> {
     match self {
@@ -37,19 +37,22 @@ fn replace_all(extract: bool, re: &regex::Regex, haystack: &str, f: impl Fn(&reg
   Ok(new)
 }
 
+fn expand_refs_word(expression_caps: &regex::Captures, word: &str) -> Res<String> {
+  Ok(if let Some(index) = word.parse::<usize>().ok() {
+    expression_caps[index].to_string()
+  } else if word == "$" {
+    word.to_string()
+  } else {
+    expression_caps[word].to_string()
+  })
+}
+
 fn expand_refs_caps(expression_haystack: &str, expression_caps: &regex::Captures, escape: bool) -> Res<String> {
   // Replace all occurrences of the reference pattern with the corresponding current capture
   Ok(replace_all(false, &ReBuilder::REFERENCE, expression_haystack, |caps: &regex::Captures| -> Res<String> {
-    // Fetch prepended state and index value
-    let prepended: bool = caps[1].len() > 0usize;
-    let index: usize = caps[2].parse::<usize>()?;
-    let result: String = if prepended {
-      // Trim prefix and suffix
-      format!("&{index}")
-    } else {
-      // Dereference index
-      expression_caps[index].to_string()
-    };
+    // Fetch index value
+    let word: &str = caps[1].trim_matches(|c: char| "{}".contains(c));
+    let result: String = expand_refs_word(expression_caps, word)?;
     Ok(if escape {
       // If the result was obtained from a literal: escape it
       regex::escape(&result)
