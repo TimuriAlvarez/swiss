@@ -2,6 +2,9 @@
 pub mod editor;
 
 #[cfg(feature = "runner")]
+pub mod preprocessor;
+
+#[cfg(feature = "runner")]
 pub mod runner;
 
 #[cfg(feature = "variables")]

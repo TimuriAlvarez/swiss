@@ -107,6 +107,10 @@ mod runtime_variables {
   }
 }
 
-pub fn apply(content: &str) -> Res<String> {
+pub fn has_attribute(contents: &str, attribute: &str) -> Res<bool> {
+  Ok(contents.lines().any(|line: &str| line == format!("[{attribute}]")))
+}
+
+pub fn run(content: &str) -> Res<String> {
   runtime_variables::process(&optional_arguments::process(content)?)
 }
