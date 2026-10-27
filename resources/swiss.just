@@ -1,20 +1,27 @@
-set unstable
-set lists
+# cd fix
 set no-cd
 
-# self
+# enable list support
+set unstable
+set lists
 
+# self
 self := 'just' ++ '--justfile' ++ justfile()
 
-# literal value
+# boolean aliases
+true := 'true'
+false := []
 
+# fold list
+fold(list) := if list && list != '' { list }
+
+# literal value
 lv(s) := replace(replace_regex(replace_regex(join_list(s),
     '^'+ "'" +'?\n', ''),
     '\n$', ''),
     '\', '\\')
 
 # shelly
-
 __shelly(cmd) := if cmd =~ '^>.*' {
     shell(replace_regex(cmd, '^>[[:blank:]]*', ''))
 } else if cmd =~ '^@.*' {
@@ -24,12 +31,7 @@ __shelly(cmd) := if cmd =~ '^>.*' {
 }
 shelly(cmd) := __shelly(join_list(cmd))
 
-# fold
-
-fold(list) := if list && list != '' { list }
-
 # variables
-
 __set(signature, name, value) := shelly('> swiss-vars' ++ quote(signature) ++ quote(name) ++ 'set' ++ quote(value))
 __nxt(signature, name, index) := if index != '' { __get(signature, name, index) }
 __get(signature, name, index) := (if index {
