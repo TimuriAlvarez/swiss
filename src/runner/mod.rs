@@ -21,7 +21,7 @@ fn contents(book: &str) -> Res<String> {
 
 fn list_recipes(book: &String, contents: String) -> Res<String> {
   let tempfile: temp_file::TempFile = temp_file::with_contents(&contents.into_bytes());
-  let all_args: Vec<&str> = vec!["--justfile", tempfile.path().to_str().expect("path conversion failed"), "--list-heading", "", "--list-prefix", "", "--list"];
+  let all_args: Vec<&str> = vec!["--justfile", tempfile.path().to_str().expect("path conversion failed"), "--color", "always", "--list-heading", "", "--list-prefix", "", "--list"];
   let state: shell::State = shell::runner(shell::output, JUST, &all_args)?;
   if !state.status.success() {
     anyhow::bail!("unable to retrieve recipes from `{book}` book\n\n{}", state)
