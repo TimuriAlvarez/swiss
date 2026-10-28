@@ -1,4 +1,4 @@
-use gprl::types::Res;
+pub use gprl::types::Res;
 
 pub const ANY: char = '.';
 pub const MARKER: char = '=';

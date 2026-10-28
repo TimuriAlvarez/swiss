@@ -1,4 +1,3 @@
-use gprl::types::Res;
 use super::prelude::*;
 
 fn regex_var_assignments(haystack: &str) -> Res<String> {

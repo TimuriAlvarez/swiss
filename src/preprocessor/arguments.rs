@@ -1,4 +1,3 @@
-use gprl::types::Res;
 use super::prelude::*;
 
 fn regex_declarations(haystack: &str) -> Res<String> {
