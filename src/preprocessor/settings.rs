@@ -33,7 +33,7 @@ fn load_vars(contents: &str) -> Res<Variables> {
       }
     }
   }
-  process_invalid_names("duplicate variables' names", duplicate)?;
+  process_invalid_names("duplicate variables' names", &duplicate)?;
   Ok(result)
 }
 

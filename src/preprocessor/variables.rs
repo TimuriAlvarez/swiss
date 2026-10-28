@@ -62,6 +62,6 @@ pub fn process(contents: &str, settings: &Settings) -> Res<String> {
     }
   }
   // Report unresolved variables' names
-  process_invalid_names("unresolved variables' names", unresolved)?;
+  process_invalid_names("unresolved variables' names", &unresolved)?;
   Ok(haystack)
 }
