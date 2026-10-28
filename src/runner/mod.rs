@@ -70,6 +70,6 @@ pub fn runner(book: &String, args: &[String]) -> Res {
   all_args.extend(args.iter().map(|arg: &String| arg.as_str()));
   let state: shell::State = shell::runner(shell::spawn, JUST, &all_args)?;
   let signature: &str = tempfile.path().file_stem().expect("stem extraction failure").to_str().expect("path conversion failure");
-  crate::variables::purge(signature)?;
+  crate::variables::purge(false, signature)?;
   shell::propagate(state)
 }
