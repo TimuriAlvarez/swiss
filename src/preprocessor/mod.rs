@@ -6,7 +6,7 @@ mod arguments;
 mod variables;
 
 pub fn has_attribute(contents: &str, attribute: &str) -> Res<bool> {
-  Ok(contents.lines().any(|line: &str| line == format!("[{attribute}]")))
+  settings::find_attribute(contents, attribute).map(|s: String| !s.is_empty())
 }
 
 pub fn run(contents: &str) -> Res<String> {

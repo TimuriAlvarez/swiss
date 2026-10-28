@@ -37,6 +37,14 @@ fn load_vars(contents: &str) -> Res<Variables> {
   Ok(result)
 }
 
+pub fn find_attribute(contents: &str, attribute: &str) -> Res<String> {
+  let l_attr: String = format!(r"({ANY}+,{BLANK}*)+");
+  let r_attr: String = format!(r"(,{BLANK}*{ANY}+)+");
+  let pattern: String = format!(r"^\[({l_attr})?\<$1\>({r_attr})?\]?$");
+  let replacement: String = format!("$0\n");
+  crate::editor::editor(true, contents, &pattern, &replacement, &[attribute])
+}
+
 pub fn load(contents: &str) -> Res<Settings> {
   let settings: Settings = Settings {
     vars: load_vars(contents)?,
