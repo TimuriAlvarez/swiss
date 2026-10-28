@@ -6,10 +6,13 @@ set unstable
 set lists
 
 # self
+[private]
 self := 'just' ++ '--justfile' ++ justfile()
 
 # boolean aliases
+[private]
 true := 'true'
+[private]
 false := []
 
 # fold list
