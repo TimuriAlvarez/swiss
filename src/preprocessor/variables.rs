@@ -39,7 +39,7 @@ fn regex_fill_calls_out(haystack: &str, name: &str, signature: &Option<String>) 
 
 pub fn process(contents: &str, settings: &Settings) -> Res<String> {
   let mut haystack: String = contents.to_string();
-  let mut unresolved: Vec<String> = Vec::new();
+  let mut unresolved: VarNames = VarNames::new();
   // Extract assigned variables' names
   let names: VarNames = regex_var_assignments(&haystack)?.lines().map(|line: &str| line.to_owned()).collect();
   // Substitute variable's assignments
@@ -48,7 +48,7 @@ pub fn process(contents: &str, settings: &Settings) -> Res<String> {
       haystack = regex_fill_assignments_out(&haystack, &name, signature)?;
       haystack = regex_fill_assignments_with_operators_out(&haystack, &name, signature)?;
     } else {
-      unresolved.push(name);
+      unresolved.insert(name);
     }
   }
   // Extract accessed variables' names
@@ -58,12 +58,10 @@ pub fn process(contents: &str, settings: &Settings) -> Res<String> {
     if let Some(signature) = settings.vars.get(&name) {
       haystack = regex_fill_calls_out(&haystack, &name, signature)?;
     } else {
-      unresolved.push(name);
+      unresolved.insert(name);
     }
   }
-  // Report any unresolved variables' names
-  if !unresolved.is_empty() {
-    anyhow::bail!("Unresolved variables' names: {}", unresolved.join(", "))
-  }
+  // Report unresolved variables' names
+  process_invalid_names("unresolved variables' names", unresolved)?;
   Ok(haystack)
 }
