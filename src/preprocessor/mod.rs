@@ -3,6 +3,7 @@ use gprl::types::Res;
 pub mod prelude;
 mod settings;
 mod arguments;
+mod regions;
 mod variables;
 
 pub fn has_attribute(contents: &str, attribute: &str) -> Res<bool> {
@@ -17,6 +18,7 @@ pub fn run(contents: &str) -> Res<String> {
   // Process macro expansions
   contents = settings::process(&contents)?;
   contents = arguments::process(&contents)?;
+  contents = regions::process(&contents)?;
   contents = variables::process(&contents, &settings)?;
   Ok(contents)
 }

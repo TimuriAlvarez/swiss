@@ -9,6 +9,9 @@ pub const BLANK: &str = r"[[:blank:]]";
 pub const OPERATOR: &str = r"\+\+|\+|/";
 pub const EXPRESSION: &str = r#"\(.*\)|\[.*\]|"[^"]*"|'[^']*'|[^,\(\)\s]+"#;
 
+pub const REGION_BEGIN: &str = r"r#\{\{";
+pub const REGION_END: &str = r"#\}\}";
+
 pub type VarNames = std::collections::BTreeSet<String>;
 pub type Variables = std::collections::BTreeMap<String, Option<String>>;
 
