@@ -49,7 +49,8 @@ fn main() -> gprl::types::Res {
   if app.skip_existing && std::path::Path::new(&app.file).exists() { return Ok(()) }
   let haystack: String = read_to_string(&app.file)?;
   if app.skip_empty && haystack.is_empty() { return Ok(()) }
-  let contents: String = swiss::editor::editor(app.extract, &haystack, &app.pattern, &app.replacement, &app.literals)?;
+  let literals: Vec<&str> = app.literals.iter().map(String::as_str).collect();
+  let contents: String = swiss::editor::editor(app.extract, &haystack, &app.pattern, &app.replacement, &literals)?;
   let path: String = app.output.unwrap_or(app.file.clone());
   if path == "-" {
     print!("{contents}");

@@ -63,11 +63,11 @@ fn expand_refs_caps(expression_haystack: &str, expression_caps: &regex::Captures
   })?)
 }
 
-fn expand_refs_values(expression_haystack: &str, literals: &[String]) -> Res<String> {
+fn expand_refs_values(expression_haystack: &str, literals: &[&str]) -> Res<String> {
   // Bundle literals into a haystack
   let haystack: String = literals.join("\n");
   // Build a special regex for these literals
-  let literals: Vec<String> = literals.into_iter().map(|literals: &String| regex::escape(literals)).collect();
+  let literals: Vec<String> = literals.into_iter().map(|literals: &&str| regex::escape(literals)).collect();
   let re: regex::Regex = ReBuilder::Literals(&literals).build()?;
   // Convert literals into captures
   let expression_caps: regex::Captures = re.captures(&haystack).unwrap();
@@ -75,7 +75,7 @@ fn expand_refs_values(expression_haystack: &str, literals: &[String]) -> Res<Str
   expand_refs_caps(expression_haystack, &expression_caps, true)
 }
 
-pub fn editor(extract: bool, haystack: &str, pattern: &str, replacement: &str, literals: &[String]) -> Res<String> {
+pub fn editor(extract: bool, haystack: &str, pattern: &str, replacement: &str, literals: &[&str]) -> Res<String> {
   // Expand all references from the pattern to literals
   let pat: String = expand_refs_values(pattern, literals)?;
   event!(Level::DEBUG, "pattern = {pat:?}");
