@@ -92,3 +92,7 @@ pub fn editor(extract: bool, haystack: &str, pattern: &str, replacement: &str, l
     Ok(expand_refs_caps(&rep, caps, false)?)
   })?)
 }
+
+pub fn shield(replacement: &str) -> String {
+  replacement.replace('$', "$$")
+}

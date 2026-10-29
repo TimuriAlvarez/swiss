@@ -18,7 +18,7 @@ fn regex_fill_out(haystack: &str, name: &str, argc: usize, value: &str) -> Res<S
     vec![format!(r#"(?:{EXPRESSION})"#); argc].join(&format!(r",{BLANK}*"))
   };
   let pattern: String = format!(r"$1\(({argv})\)");
-  let replacement: String = format!("{name}($1{sep}{value})");
+  let replacement: String = format!("{name}($1{sep}{})", crate::editor::shield(value));
   crate::editor::editor(false, haystack, &pattern, &replacement, &[name])
 }
 
