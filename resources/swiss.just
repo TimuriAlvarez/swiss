@@ -5,6 +5,10 @@ set no-cd
 set unstable
 set lists
 
+# newline
+[private]
+NEWLINE := "\n"
+
 # self
 [private]
 self := 'just' ++ '--justfile' ++ justfile()
@@ -16,23 +20,26 @@ true := 'true'
 false := []
 
 # fold list
-fold(list) := if list && list != '' { list }
+fold(value) := if value && value != '' { value }
+
+# split string into lines
+lines(s) := split(s, NEWLINE)
 
 # literal value
-lv(s) := replace(replace_regex(replace_regex(join_list(s),
+lv(value) := replace(replace_regex(replace_regex(join_list(value),
     '^'+ "'" +'?\n', ''),
     '\n$', ''),
     '\', '\\')
 
 # shelly
-__swiss_shelly(cmd) := if cmd =~ '^>.*' {
-    shell(replace_regex(cmd, '^>[[:blank:]]*', ''))
-} else if cmd =~ '^@.*' {
-    replace_regex(cmd, '^@[[:blank:]]*', '')
+__swiss_shelly(s) := if s =~ '^>.*' {
+    shell(replace_regex(s, '^>[[:blank:]]*', ''))
+} else if s =~ '^@.*' {
+    replace_regex(s, '^@[[:blank:]]*', '')
 } else {
-    '( echo ' + quote('> ' + BOLD + cmd + NORMAL) + '; ' + cmd + '; )'
+    '( echo ' + quote('> ' + BOLD + s + NORMAL) + '; ' + s + '; )'
 }
-shelly(cmd) := __swiss_shelly(join_list(cmd))
+shelly(value) := __swiss_shelly(join_list(value))
 
 # variables
 __swiss_vars_cmd(persist, signature, name, query, args) := shelly('>' ++ 'swiss-vars' ++ quote((if bool(persist) { '--persist' }) ++ signature ++ query ++ name ++ args))
