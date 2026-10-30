@@ -57,9 +57,10 @@ fn main() -> gprl::types::Res {
   let shield: Vec<&str> = app.shield.iter().map(String::as_str).collect();
   let contents: String = swiss::editor::edit(&config, &haystack, &app.pattern, &app.replacement, &escape, &shield)?;
   let path: String = app.output.unwrap_or(app.file.clone());
+  let overwrite_empty: bool = !app.skip_empty && haystack.is_empty() && contents.is_empty();
   if path == "-" {
     print!("{contents}");
-  } else if path == app.file && haystack == contents {
+  } else if path == app.file && haystack == contents && !overwrite_empty {
     event!(Level::INFO, "No changes to the '{}' file were made", app.file);
   } else {
     gprl::fs::write_to_path(path, &contents)?;

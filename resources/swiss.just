@@ -9,15 +9,15 @@ set lists
 [private]
 NEWLINE := "\n"
 
-# self
-[private]
-self := 'just' ++ '--justfile' ++ justfile()
-
 # boolean aliases
 [private]
 true := 'true'
 [private]
 false := []
+
+# self
+[private]
+self := 'just' ++ '--justfile' ++ justfile()
 
 # fold list
 fold(value) := if value && value != '' { value }
@@ -31,15 +31,27 @@ lv(value) := replace(replace_regex(replace_regex(join_list(value),
     '\n$', ''),
     '\', '\\')
 
+# require
+require(name) := fold(replace_regex(which(name) || '', '^.*/(?<name>.*)$', '$name'))
+
+# signature
+[private]
+__swiss_signature := file_stem(justfile())
+
+# state
+state_directory() := if env('XDG_CONFIG_HOME', []) { env('XDG_CONFIG_HOME') } else { home_directory() / '.local' / 'state' }
+state_file() := state_directory() / 'swiss' / __swiss_signature / uuid()
+
 # shelly
-__swiss_shelly(s) := if s =~ '^>.*' {
-    shell(replace_regex(s, '^>[[:blank:]]*', ''))
+__swiss_shelly(s, stdout, failure) := if s =~ '^>.*' {
+    shell('( ' + replace_regex(s, '^>[[:blank:]]*', '') + '; ) > ' + quote(stdout) + ' || swiss-edit ' + quote(failure) + ' ' + quote('\A\z') + ' ' + quote('')) \
+    && [] || if !path_exists(failure) { trim_end_match(read(stdout), NEWLINE) }
 } else if s =~ '^@.*' {
     replace_regex(s, '^@[[:blank:]]*', '')
 } else {
     '( echo ' + quote('> ' + BOLD + s + NORMAL) + '; ' + s + '; )'
 }
-shelly(value) := __swiss_shelly(join_list(value))
+shelly(value) := __swiss_shelly(join_list(value), state_file(), state_file())
 
 # variables
 __swiss_vars_cmd(persist, signature, name, query, args) := shelly('>' ++ 'swiss-vars' ++ quote((if bool(persist) { '--persist' }) ++ signature ++ query ++ name ++ args))
