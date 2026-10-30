@@ -16,7 +16,6 @@ impl Config {
 pub enum ReBuilder<'a> {
   Group(&'a str),
   Pattern(&'a str),
-  Literals(&'a [String]),
 }
 
 impl<'a> ReBuilder<'a> {
@@ -30,7 +29,6 @@ impl<'a> ReBuilder<'a> {
     regex::Regex::new(&match self {
       ReBuilder::Group(s) => format!(r"\{s}(\{s}|\{{[[:word:]]+\}}|[[:word:]]+)"),
       ReBuilder::Pattern(s) => format!(r"(?m){s}"),
-      ReBuilder::Literals(s) => format!(r"^({})$", vec![r"[^\x00]*"; s.len()].join(r")\x00(")),
     })
   }
 }
