@@ -1,14 +1,14 @@
 use super::prelude::*;
 
 fn regex_declarations(haystack: &str) -> Res<String> {
-  let pattern: String = format!(r#"^$1{BLANK}+$2{BLANK}+:={BLANK}+({EXPRESSION})(({BLANK}+$3{BLANK}+$4{BLANK}+('{IDENT}'|"{IDENT}"))?)$"#);
+  let pattern: String = format!(r#"^&1{BLANK}+&2{BLANK}+:={BLANK}+({EXPRESSION})(({BLANK}+&3{BLANK}+&4{BLANK}+('{IDENT}'|"{IDENT}"))?)$"#);
   let replacement: String = format!("$1{MARKER}$2\n");
-  crate::editor::editor(true, haystack, &pattern, &replacement, &["set", "swiss-vars", "persist", "as"])
+  editor::edit(&editor::Config::EXTRACT, haystack, &pattern, &replacement, &["set", "swiss-vars", "persist", "as"], &[])
 }
 
 fn regex_signature(haystack: &str) -> Res<String> {
-  let pattern: String = format!(r#"^{BLANK}+$3{BLANK}+$4{BLANK}+('{IDENT}'|"{IDENT}")$"#);
-  crate::editor::editor(true, haystack, &pattern, "$1", &["set", "swiss-vars", "persist", "as"])
+  let pattern: String = format!(r#"^{BLANK}+&3{BLANK}+&4{BLANK}+('{IDENT}'|"{IDENT}")$"#);
+  editor::edit(&editor::Config::EXTRACT, haystack, &pattern, "$1", &["set", "swiss-vars", "persist", "as"], &[])
 }
 
 fn load_vars(contents: &str) -> Res<Variables> {
@@ -39,9 +39,8 @@ fn load_vars(contents: &str) -> Res<Variables> {
 pub fn find_attribute(contents: &str, attribute: &str) -> Res<String> {
   let l_attr: String = format!(r"({ANY}+,{BLANK}*)+");
   let r_attr: String = format!(r"(,{BLANK}*{ANY}+)+");
-  let pattern: String = format!(r"^\[({l_attr})?\<$1\>({r_attr})?\]?$");
-  let replacement: String = format!("$0\n");
-  crate::editor::editor(true, contents, &pattern, &replacement, &[attribute])
+  let pattern: String = format!(r"^\[({l_attr})?\<&1\>({r_attr})?\]?$");
+  editor::edit(&editor::Config::EXTRACT, contents, &pattern, "$0\n", &[attribute], &[])
 }
 
 pub fn load(contents: &str) -> Res<Settings> {
@@ -55,9 +54,8 @@ pub fn process(contents: &str) -> Res<String> {
   let mut haystack: String = contents.to_string();
   // Comment every swiss setting out
   for setting in Settings::ALL {
-    let pattern: String = format!(r"^set{BLANK}+$1$2{ANY}*?$");
-    let replacement: String = format!("# $0");
-    haystack = crate::editor::editor(false, &haystack, &pattern, &replacement, &["swiss-", setting])?;
+    let pattern: String = format!(r"^set{BLANK}+&1&2{ANY}*?$");
+    haystack = editor::edit(&editor::Config::DEFAULT, &haystack, &pattern, "# $0", &["swiss-", setting], &[])?;
   }
   Ok(haystack)
 }

@@ -3,12 +3,12 @@ use super::prelude::*;
 fn regex_declarations(haystack: &str) -> Res<String> {
   let pattern: String = format!(r"^({IDENT})\(({ANY}*{MARKER}{ANY}*)\)({BLANK}*:={BLANK}*{ANY}*)$");
   let replacement: String = format!("$1{MARKER}$2\n");
-  crate::editor::editor(true, haystack, &pattern, &replacement, &[])
+  editor::edit(&editor::Config::EXTRACT, haystack, &pattern, &replacement, &[], &[])
 }
 
 fn regex_value(haystack: &str) -> Res<String> {
   let pattern: String = format!(r"^({EXPRESSION}){ANY}*$");
-  crate::editor::editor(true, haystack, &pattern, "$1", &[])
+  editor::edit(&editor::Config::EXTRACT, haystack, &pattern, "$1", &[], &[])
 }
 
 fn regex_fill_out(haystack: &str, name: &str, argc: usize, value: &str) -> Res<String> {
@@ -17,15 +17,15 @@ fn regex_fill_out(haystack: &str, name: &str, argc: usize, value: &str) -> Res<S
     // A pattern that matches either a quoted string (which may contain commas) or an unquoted non-comma sequence
     vec![format!(r#"(?:{EXPRESSION})"#); argc].join(&format!(r",{BLANK}*"))
   };
-  let pattern: String = format!(r"$1\(({argv})\)");
-  let replacement: String = format!("{name}($1{sep}{})", crate::editor::shield(value));
-  crate::editor::editor(false, haystack, &pattern, &replacement, &[name])
+  let pattern: String = format!(r"&1\(({argv})\)");
+  let replacement: String = format!("{name}($1{sep}&1)");
+  editor::edit(&editor::Config::DEFAULT, haystack, &pattern, &replacement, &[name], &[value])
 }
 
 fn regex_truncate(haystack: &str, name: &str, standard: &str) -> Res<String> {
-  let pattern: String = format!(r"^\<($1)\>\({ANY}*\)({BLANK}*:={BLANK}*{ANY}*)$");
-  let replacement: String = format!("$1({standard})$2");
-  crate::editor::editor(false, haystack, &pattern, &replacement, &[name])
+  let pattern: String = format!(r"^\<(&1)\>\({ANY}*\)({BLANK}*:={BLANK}*{ANY}*)$");
+  let replacement: String = format!("$1(&1)$2");
+  editor::edit(&editor::Config::DEFAULT, haystack, &pattern, &replacement, &[name], &[standard])
 }
 
 pub fn process(contents: &str) -> Res<String> {

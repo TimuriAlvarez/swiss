@@ -14,6 +14,7 @@ pub fn run(contents: &str) -> Res<String> {
   // Source default justfile and active settings
   let swiss: &str = include_str!("../../resources/swiss.just");
   let mut contents: String = format!("{contents}\n{swiss}");
+  // Load swiss-related settings
   let settings: prelude::Settings = settings::load(&contents)?;
   // Process macro expansions
   contents = settings::process(&contents)?;

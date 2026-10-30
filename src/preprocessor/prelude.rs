@@ -1,4 +1,5 @@
 pub use gprl::types::Res;
+pub use crate::editor;
 
 pub const ANY: char = '.';
 pub const MARKER: char = '=';
@@ -10,9 +11,9 @@ pub const OPERATOR: &str = r"\+\+|\+|/";
 pub const EXPRESSION: &str = r#"\(.*\)|\[.*\]|"[^"]*"|'[^']*'|[^,\(\)\s]+"#;
 
 pub const REGION_BEGIN_INTERPOL: &str = r"r#\{\{";
-pub const REGION_BEGIN_SCRIPT: &str = r"r#$$";
+pub const REGION_BEGIN_SCRIPT: &str = r"r#\$\$";
 pub const REGION_END_INTERPOL: &str = r"#\}\}";
-pub const REGION_END_SCRIPT: &str = r"#$$";
+pub const REGION_END_SCRIPT: &str = r"#\$\$";
 
 pub type VarNames = std::collections::BTreeSet<String>;
 pub type Variables = std::collections::BTreeMap<String, Option<String>>;
@@ -22,6 +23,7 @@ pub fn process_invalid_names(message: &str, names: &VarNames) -> Res {
   anyhow::bail!("{message}\n{names:#?}")
 }
 
+#[derive(Debug)]
 pub struct Settings {
   pub vars: Variables,
 }

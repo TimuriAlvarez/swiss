@@ -26,12 +26,12 @@ fn select_separator_for(haystack: &str) -> Res<char> {
 fn regex_regions(haystack: &str, region_begin: &str, region_end: &str, separator: char) -> Res<String> {
   let pattern: String = format!(r#"{BLANK}+(@{BLANK}*)?{region_begin}({ANY}|\n)*?{region_end}{ANY}*"#);
   let replacement: String = format!("$0{separator}");
-  crate::editor::editor(true, haystack, &pattern, &replacement, &[])
+  editor::edit(&editor::Config::EXTRACT, haystack, &pattern, &replacement, &[], &[])
 }
 
 fn regex_keyword_end(haystack: &str) -> Res<String> {
-  let pattern: String = format!(r#"^{ANY}*?\<($1|$2)\>$"#);
-  crate::editor::editor(true, haystack, &pattern, "$1", &["then", "else"])
+  let pattern: String = format!(r#"^{ANY}*?\<(&1|&2)\>$"#);
+  editor::edit(&editor::Config::EXTRACT, haystack, &pattern, "$1", &["then", "else"], &[])
 }
 
 fn count_of(s: &str, charset: &str) -> usize {
