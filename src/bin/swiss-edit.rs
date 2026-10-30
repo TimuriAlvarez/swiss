@@ -11,17 +11,23 @@ pub struct CLI {
   #[arg(long="log-level", default_value="info")]
   level: tracing::Level,
   /// Enable matches extraction
-  #[arg(long="extract", default_value="false")]
+  #[arg(long, short='x')]
   extract: bool,
   /// If there is a file present when edition is requested, the operation is skipped
-  #[arg(long="skip-existing", default_value="false")]
+  #[arg(long)]
   skip_existing: bool,
   /// If the requested file is not present or it is empty, the operation is skipped
-  #[arg(long="skip-empty", default_value="false")]
+  #[arg(long)]
   skip_empty: bool,
   /// Write to the specified file ('-' for stdout)
-  #[arg(long="output", short='o', allow_hyphen_values=true)]
+  #[arg(long, short, allow_hyphen_values=true)]
   output: Option<String>,
+  /// Escape untrusted input in pattern
+  #[arg(long, short, allow_hyphen_values=true)]
+  escape: Vec<String>,
+  /// Shield untrusted input in replacement
+  #[arg(long, short, allow_hyphen_values=true)]
+  shield: Vec<String>,
   /// Path to the file to be edited ('-' for stdin)
   #[arg(allow_hyphen_values=true)]
   file: String,
@@ -31,9 +37,6 @@ pub struct CLI {
   /// A replacement for the pattern's matches
   #[arg(allow_hyphen_values=true)]
   replacement: String,
-  /// String literals (escaped before being fed to the pattern)
-  #[arg(allow_hyphen_values=true)]
-  literals: Vec<String>,
 }
 
 fn read_to_string(file: &str) -> std::io::Result<String> {
@@ -49,8 +52,10 @@ fn main() -> gprl::types::Res {
   if app.skip_existing && std::path::Path::new(&app.file).exists() { return Ok(()) }
   let haystack: String = read_to_string(&app.file)?;
   if app.skip_empty && haystack.is_empty() { return Ok(()) }
-  let literals: Vec<&str> = app.literals.iter().map(String::as_str).collect();
-  let contents: String = swiss::editor::editor(app.extract, &haystack, &app.pattern, &app.replacement, &literals)?;
+  let config: swiss::editor::Config = swiss::editor::Config::default().extract(app.extract);
+  let escape: Vec<&str> = app.escape.iter().map(String::as_str).collect();
+  let shield: Vec<&str> = app.shield.iter().map(String::as_str).collect();
+  let contents: String = swiss::editor::edit(&config, &haystack, &app.pattern, &app.replacement, &escape, &shield)?;
   let path: String = app.output.unwrap_or(app.file.clone());
   if path == "-" {
     print!("{contents}");

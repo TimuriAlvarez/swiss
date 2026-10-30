@@ -219,6 +219,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "descape"
+version = "3.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "700357d9fb22b5232a85e34a413c1a76ae649f532c31107e402dc84e9c03bfb2"
+
+[[package]]
 name = "dirwalk"
 version = "1.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -592,11 +598,12 @@ checksum = "7da8b5736845d9f2fcb837ea5d9e2628564b3b043a70948a3f0b778838c5fb4f"
 
 [[package]]
 name = "swiss"
-version = "0.15.5"
+version = "0.16.0"
 dependencies = [
  "anyhow",
  "clap",
  "derive_more",
+ "descape",
  "dirwalk",
  "gprl",
  "lexical-sort",
@@ -606,7 +613,6 @@ dependencies = [
  "temp-file",
  "tracing",
  "tracing-subscriber",
- "unescape",
  "xdg",
 ]
 
@@ -723,12 +729,6 @@ dependencies = [
  "tracing-core",
  "tracing-log",
 ]
-
-[[package]]
-name = "unescape"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ccb97dac3243214f8d8507998906ca3e2e0b900bf9bf4870477f125b82e68f6e"
 
 [[package]]
 name = "unicode-ident"
