@@ -26,11 +26,10 @@ fold(value) := if value && value != '' { value }
 lines(s) := split(s, NEWLINE)
 
 # literal value
-lv(value, replacement='$lv') := replace_regex(replace(replace_regex(replace_regex(join_list(value),
+lv(value) := replace(replace_regex(replace_regex(join_list(value),
     '^'+ "'" +'?\n', ''),
     '\n$', ''),
-    '\', '\\'),
-    '(?<lv>.*)', replacement)
+    '\', '\\')
 
 # shelly
 __swiss_shelly(s) := if s =~ '^>.*' {
