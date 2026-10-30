@@ -1,38 +1,43 @@
 use super::prelude::*;
 
-fn regex_declarations(haystack: &str) -> Res<String> {
-  let pattern: String = format!(r#"^&1{BLANK}+&2{BLANK}+:={BLANK}+({EXPRESSION})(({BLANK}+&3{BLANK}+&4{BLANK}+('{IDENT}'|"{IDENT}"))?)$"#);
+fn regex_vars_declarations(haystack: &str) -> Res<String> {
+  let pattern: String = format!(r#"^&1{BLANK}+&2{BLANK}+:={BLANK}+({EXPRESSION})(({BLANK}+&3{BLANK}+&4{BLANK}+({EXPRESSION}))?)$"#);
   let replacement: String = format!("$1{MARKER}$2\n");
   editor::edit(&editor::Config::EXTRACT, haystack, &pattern, &replacement, &["set", "swiss-vars", "persist", "as"], &[])
 }
 
-fn regex_signature(haystack: &str) -> Res<String> {
-  let pattern: String = format!(r#"^{BLANK}+&3{BLANK}+&4{BLANK}+('{IDENT}'|"{IDENT}")$"#);
+fn regex_vars_trail(haystack: &str) -> Res<String> {
+  let pattern: String = format!(r#"^{BLANK}+&3{BLANK}+&4{BLANK}+({EXPRESSION})$"#);
   editor::edit(&editor::Config::EXTRACT, haystack, &pattern, "$1", &["set", "swiss-vars", "persist", "as"], &[])
 }
 
-fn load_vars(contents: &str) -> Res<Variables> {
-  let mut result: Variables = Variables::new();
-  let mut duplicate: VarNames = VarNames::new();
+fn regex_trim_trail(haystack: &str) -> Res<String> {
+  let pattern: String = format!(r#"^['''|"""|'|"](.*?)['''|"""|'|"]$"#);
+  editor::edit(&editor::Config::DEFAULT, haystack, &pattern, "$1", &[], &[])
+}
+
+fn load_entries(contents: &str, declarations: impl Fn(&str) -> Res<String>, trail: impl Fn(&str) -> Res<String>, name: &str) -> Res<Entries> {
+  let mut result: Entries = Entries::new();
+  let mut duplicate: Entry = Entry::new();
   // Extract swiss settings for variables
-  for declaration in regex_declarations(contents)?.lines() {
-    // Get variables' names
+  for declaration in declarations(contents)?.lines() {
+    // Get identifiers
     let marker: usize = declaration.find(MARKER).unwrap();
     let left: &str = &declaration[..marker].trim_matches(|c: char| "[]".contains(c));
-    let names: Vec<&str> = left.split(",").map(|s: &str| s.trim()).collect();
-    // Get signature (for persistent variables)
-    let trail: &str = &declaration[marker+1..];
-    let signature: String = regex_signature(trail)?;
+    let identifiers: Vec<&str> = left.split(",").map(|s: &str| s.trim()).collect();
+    // Get trail
+    let right: &str = &declaration[marker+1..];
+    let trail: String = trail(right)?;
     // Save variables and signatures to settings
-    for name in names {
-      if result.contains_key(name) {
-        duplicate.insert(name.to_owned());
+    for identifier in identifiers {
+      if result.contains_key(identifier) {
+        duplicate.insert(identifier.to_owned());
       } else {
-        result.insert(name.to_owned(), if signature.is_empty() { None } else { Some(signature.clone()) });
+        result.insert(identifier.to_owned(), if trail.is_empty() { None } else { Some(regex_trim_trail(&trail)?) });
       }
     }
   }
-  process_invalid_names("duplicate variables' names", &duplicate)?;
+  process_invalid_entries(&format!("duplicate {name}"), &duplicate)?;
   Ok(result)
 }
 
@@ -45,7 +50,7 @@ pub fn find_attribute(contents: &str, attribute: &str) -> Res<String> {
 
 pub fn load(contents: &str) -> Res<Settings> {
   let settings: Settings = Settings {
-    vars: load_vars(contents)?,
+    vars: load_entries(contents, regex_vars_declarations, regex_vars_trail, "variables' names")?,
   };
   Ok(settings)
 }

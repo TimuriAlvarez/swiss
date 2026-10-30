@@ -15,17 +15,17 @@ pub const REGION_BEGIN_SCRIPT: &str = r"r#\$\$";
 pub const REGION_END_INTERPOL: &str = r"#\}\}";
 pub const REGION_END_SCRIPT: &str = r"#\$\$";
 
-pub type VarNames = std::collections::BTreeSet<String>;
-pub type Variables = std::collections::BTreeMap<String, Option<String>>;
+pub type Entry = std::collections::BTreeSet<String>;
+pub type Entries = std::collections::BTreeMap<String, Option<String>>;
 
-pub fn process_invalid_names(message: &str, names: &VarNames) -> Res {
+pub fn process_invalid_entries(message: &str, names: &Entry) -> Res {
   if names.is_empty() { return Ok(()) }
   anyhow::bail!("{message}\n{names:#?}")
 }
 
 #[derive(Debug)]
 pub struct Settings {
-  pub vars: Variables,
+  pub vars: Entries,
 }
 
 impl Settings {
