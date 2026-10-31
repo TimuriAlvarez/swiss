@@ -7,7 +7,7 @@ pub struct CLI {
   /// Log level
   #[arg(long="log-level", default_value="info")]
   filter: tracing::Level,
-  /// Recipe book's name
+  /// Recipe book's name or path
   book: Option<String>,
   /// Recipe's arguments
   #[arg(allow_hyphen_values=true)]
@@ -20,7 +20,8 @@ fn main() -> gprl::types::Res {
   let default: bool = swiss::runner::viewer(&app.book)?;
   if let Some(book) = app.book {
     if !default && app.args.is_empty() { return Ok(()) }
-    swiss::runner::runner(&book, &app.args)?;
+    let args: Vec<&str> = app.args.iter().map(String::as_str).collect();
+    swiss::runner::runner(&book, &args, None)?;
   }
   Ok(())
 }

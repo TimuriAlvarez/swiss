@@ -20,8 +20,8 @@ pub fn contents(book: &str) -> Res<String> {
 
 fn list_recipes(book: &String, contents: String) -> Res<String> {
   let tempfile: temp_file::TempFile = temp_file::with_contents(&contents.into_bytes());
-  let all_args: Vec<&str> = vec!["--justfile", tempfile.path().to_str().expect("path conversion failed"), "--color", "always", "--list-heading", "", "--list-prefix", "", "--list"];
-  let state: shell::State = shell::runner(shell::output, JUST, &all_args)?;
+  let args: &[&str] = &["--justfile", tempfile.path().to_str().expect("path conversion failed"), "--color", "always", "--list-heading", "", "--list-prefix", "", "--list"];
+  let state: shell::State = shell::runner(shell::output, JUST, args)?;
   if !state.status.success() {
     anyhow::bail!("unable to retrieve recipes from `{book}` book\n\n{}", state)
   }
@@ -47,7 +47,7 @@ pub fn viewer(book: &Option<String>) -> Res<bool> {
     if shell::version(JUST).is_err() {
       anyhow::bail!("missing dependency: {JUST}")
     }
-    let contents: String = crate::preprocessor::run(&contents(book)?)?;
+    let contents: String = crate::preprocessor::run(&contents(book)?, None)?;
     default = crate::preprocessor::has_attribute(&contents, "default")?;
     markdown::book(book, &list_recipes(book, contents)?)
   } else {
@@ -62,14 +62,13 @@ pub fn viewer(book: &Option<String>) -> Res<bool> {
   Ok(default)
 }
 
-pub fn runner(book: &String, args: &[String]) -> Res {
-  let contents: String = crate::preprocessor::run(&contents(book)?)?;
+pub fn runner(book: &String, args: &[&str], hook: Option<&crate::preprocessor::prelude::Hook>) -> Res {
+  let contents: String = crate::preprocessor::run(&contents(book)?, hook)?;
   let tempfile: temp_file::TempFile = temp_file::with_contents(&contents.into_bytes());
-  let mut all_args: Vec<&str> = vec!["--justfile", tempfile.path().to_str().expect("path conversion failed")];
-  all_args.extend(args.iter().map(|arg: &String| arg.as_str()));
+  let args: Vec<&str> = [&["--justfile", tempfile.path().to_str().expect("path conversion failed")], args].concat();
   let signature: &str = tempfile.path().file_stem().expect("stem extraction failure").to_str().expect("path conversion failure");
   crate::variables::initialize_path(false, signature)?;
-  let state: shell::State = shell::runner(shell::spawn, JUST, &all_args)?;
+  let state: shell::State = shell::runner(shell::spawn, JUST, &args)?;
   crate::variables::purge(false, signature)?;
   shell::propagate(state)
 }

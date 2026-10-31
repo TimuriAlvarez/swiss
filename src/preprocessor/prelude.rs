@@ -55,3 +55,7 @@ impl RegionLines {
     if self.echo && condition { "@ " } else { "" }
   }
 }
+
+#[derive(Debug)]
+pub struct Hook {
+}

@@ -6,7 +6,7 @@ fn regex_var_assignments(haystack: &str) -> Res<String> {
   editor::edit(&editor::Config::EXTRACT, haystack, &pattern, &replacement, &[], &[])
 }
 
-fn unwrap_signature(signature: &Option<String>) -> String {
+fn unwrap_signature(signature: Option<&String>) -> String {
   if let Some(signature) = signature {
     format!("'{signature}'")
   } else {
@@ -14,7 +14,7 @@ fn unwrap_signature(signature: &Option<String>) -> String {
   }
 }
 
-fn regex_fill_assignments_out(haystack: &str, name: &str, signature: &Option<String>) -> Res<String> {
+fn regex_fill_assignments_out(haystack: &str, name: &str, signature: Option<&String>) -> Res<String> {
   let persist: bool = signature.is_some();
   let signature: String = unwrap_signature(signature);
   let pattern: String = format!(r#"(&1){BLANK}*:={BLANK}*\{{{BLANK}*({ANY}{ANY}*?){BLANK}*}}"#);
@@ -22,7 +22,7 @@ fn regex_fill_assignments_out(haystack: &str, name: &str, signature: &Option<Str
   editor::edit(&editor::Config::DEFAULT, haystack, &pattern, &replacement, &[name], &[])
 }
 
-fn regex_fill_assignments_with_operators_out(haystack: &str, name: &str, signature: &Option<String>) -> Res<String> {
+fn regex_fill_assignments_with_operators_out(haystack: &str, name: &str, signature: Option<&String>) -> Res<String> {
   let persist: bool = signature.is_some();
   let signature: String = unwrap_signature(signature);
   let pattern: String = format!(r#"(&1){BLANK}*({OPERATOR}):={BLANK}*\{{{BLANK}*({ANY}{ANY}*?){BLANK}*}}"#);
@@ -36,7 +36,7 @@ fn regex_var_calls(haystack: &str) -> Res<String> {
   editor::edit(&editor::Config::EXTRACT, haystack, &pattern, &replacement, &[], &[])
 }
 
-fn regex_fill_calls_out(haystack: &str, name: &str, signature: &Option<String>) -> Res<String> {
+fn regex_fill_calls_out(haystack: &str, name: &str, signature: Option<&String>) -> Res<String> {
   let persist: bool = signature.is_some();
   let signature: String = unwrap_signature(signature);
   let pattern: String = format!(r#"([^{CHAR}])var\((&1)\)"#);
@@ -52,8 +52,8 @@ pub fn process(contents: &str, settings: &Settings) -> Res<String> {
   // Substitute variable's assignments
   for name in names {
     if let Some(signature) = settings.vars.get(&name) {
-      haystack = regex_fill_assignments_out(&haystack, &name, signature)?;
-      haystack = regex_fill_assignments_with_operators_out(&haystack, &name, signature)?;
+      haystack = regex_fill_assignments_out(&haystack, &name, signature.as_ref())?;
+      haystack = regex_fill_assignments_with_operators_out(&haystack, &name, signature.as_ref())?;
     } else {
       unresolved.insert(name);
     }
@@ -63,7 +63,7 @@ pub fn process(contents: &str, settings: &Settings) -> Res<String> {
   // Substitute variable's access calls
   for name in names {
     if let Some(signature) = settings.vars.get(&name) {
-      haystack = regex_fill_calls_out(&haystack, &name, signature)?;
+      haystack = regex_fill_calls_out(&haystack, &name, signature.as_ref())?;
     } else {
       unresolved.insert(name);
     }
