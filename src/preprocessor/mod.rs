@@ -18,7 +18,7 @@ pub fn run(contents: &str, hook: Option<&crate::preprocessor::prelude::Hook>) ->
   // Load swiss-related settings
   let settings: prelude::Settings = settings::load(&contents)?;
   // Process macro expansions
-  contents = settings::process(&contents)?;
+  contents = settings::process(&contents, &settings)?;
   contents = arguments::process(&contents)?;
   contents = regions::process(&contents)?;
   contents = variables::process(&contents, &settings)?;

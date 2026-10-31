@@ -21,18 +21,13 @@ pub fn load(contents: &str, settings: &Settings) -> Res<String> {
   Ok(haystack)
 }
 
-fn regex_assign(haystack: &str, name: &str, value: &str) -> Res<String> {
-  let pattern: String = format!(r"^(&{{1}}){BLANK}*:={BLANK}*(.*)$");
-  editor::edit(&editor::Config::DEFAULT, haystack, &pattern, "${1} := '&{1}'", &[name], &[value])
-}
-
 pub fn process(contents: &str, settings: &Settings, hook: &Hook) -> Res<String> {
   let mut haystack: String = contents.to_owned();
   if !settings.hook.contains_key(&hook.entry) {
     anyhow::bail!("hook invocation forbidden")
   }
-  haystack = regex_assign(&haystack, "__swiss_signature", &hook.signature)?;
-  haystack = regex_assign(&haystack, "__swiss_hook_variable", &hook.variable)?;
+  haystack = regex_override_assignment(&haystack, "__swiss_signature", &hook.signature)?;
+  haystack = regex_override_assignment(&haystack, "__swiss_hook_variable", &hook.variable)?;
   haystack += &format!("\n[private]\nswiss-hook:\n    {{{{ __swiss_vars_set(false, __swiss_signature, __swiss_hook_variable, {}) }}}}\n", hook.entry);
   Ok(haystack)
 }

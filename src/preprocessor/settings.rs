@@ -61,14 +61,17 @@ pub fn find_attribute(contents: &str, attribute: &str) -> Res<String> {
 
 pub fn load(contents: &str) -> Res<Settings> {
   let settings: Settings = Settings {
+    cd: std::env::current_dir()?.to_string_lossy().to_string(),
     vars: load_entries(contents, regex_vars_declarations, regex_vars_trail, "variables' names")?,
     hook: load_entries(contents, regex_hook_declarations, regex_hook_trail, "hooks")?,
   };
   Ok(settings)
 }
 
-pub fn process(contents: &str) -> Res<String> {
+pub fn process(contents: &str, settings: &Settings) -> Res<String> {
   let mut haystack: String = contents.to_string();
+  // Override working directory
+  haystack = regex_override_assignment(&haystack, "set working-directory", &settings.cd)?;
   // Comment every swiss setting out
   for setting in Settings::ALL {
     let pattern: String = format!(r"^set{BLANK}+&1&2{ANY}*?$");

@@ -1,5 +1,5 @@
 # set working directory
-set working-directory := x'$PWD'
+set working-directory := []
 
 # enable list support
 set unstable

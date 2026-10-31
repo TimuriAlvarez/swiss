@@ -25,6 +25,7 @@ pub fn process_invalid_entries(message: &str, names: &Entry) -> Res {
 
 #[derive(Debug)]
 pub struct Settings {
+  pub cd: String,
   pub vars: Entries,
   pub hook: Entries,
 }
@@ -62,4 +63,9 @@ pub struct Hook {
   pub signature: String,
   pub variable: String,
   pub entry: String,
+}
+
+pub fn regex_override_assignment(haystack: &str, assignment: &str, value: &str) -> Res<String> {
+  let pattern: String = format!(r"^(&{{1}}){BLANK}*:={BLANK}*(.*)$");
+  editor::edit(&editor::Config::DEFAULT, haystack, &pattern, "${1} := '&{1}'", &[assignment], &[value])
 }
