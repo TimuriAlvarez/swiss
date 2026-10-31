@@ -67,8 +67,7 @@ pub fn runner(book: &String, args: &[&str], hook: Option<&crate::preprocessor::p
   let tempfile: temp_file::TempFile = temp_file::with_contents(&contents.into_bytes());
   let args: Vec<&str> = [&["--justfile", tempfile.path().to_str().expect("path conversion failed")], args].concat();
   let signature: &str = tempfile.path().file_stem().expect("stem extraction failure").to_str().expect("path conversion failure");
-  crate::variables::initialize_path(false, signature)?;
+  let _instance: crate::variables::Instance = crate::variables::Instance::new(signature)?;
   let state: shell::State = shell::runner(shell::spawn, JUST, &args)?;
-  crate::variables::purge(false, signature)?;
   shell::propagate(state)
 }

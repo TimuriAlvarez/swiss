@@ -1,6 +1,9 @@
 use gprl::types::Res;
 
 mod fs;
+mod instance;
+
+pub use instance::Instance;
 
 pub fn initialize_path(persist: bool, signature: &str) -> std::io::Result::<std::path::PathBuf> {
   let xdg: xdg::BaseDirectories = xdg::BaseDirectories::with_prefix(env!("CARGO_PKG_NAME"));
