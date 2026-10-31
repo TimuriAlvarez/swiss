@@ -1,5 +1,5 @@
-# cd fix
-set no-cd
+# set working directory
+set working-directory := x'$PWD'
 
 # enable list support
 set unstable
@@ -60,3 +60,8 @@ __swiss_vars_nxt(persist, signature, name, index) := if fold(index) { __swiss_va
 __swiss_vars_get(persist, signature, name, index) := (if index {
     __swiss_vars_cmd(persist, signature, name, 'get', index)
 }) ++ __swiss_vars_nxt(persist, signature, name, __swiss_vars_cmd(persist, signature, name, 'next', index))
+
+# hook
+[private]
+__swiss_hook_variable := []
+is_hook() := __swiss_hook_variable == []
