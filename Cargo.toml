@@ -1,6 +1,6 @@
 [package]
 name = "swiss"
-version = "0.16.0"
+version = "0.16.1"
 edition = "2024"
 description = "🐺 Just a script manager"
 repository = "https://github.com/TimuriAlvarez/swiss"
@@ -8,7 +8,7 @@ repository = "https://github.com/TimuriAlvarez/swiss"
 [features]
 cli = ["dep:clap", "clap?/derive", "dep:tracing", "dep:tracing-subscriber"]
 editor = ["dep:gprl", "gprl?/types", "gprl?/fs", "dep:regex", "dep:descape"]
-variables = ["dep:gprl", "gprl?/types", "gprl?/fs", "dep:xdg", "dep:memmap2"]
+variables = ["dep:gprl", "gprl?/types", "gprl?/fs", "gprl?/ipc", "dep:xdg", "dep:memmap2"]
 runner = ["dep:gprl", "gprl?/types", "dep:xdg", "dep:lexical-sort", "dep:dirwalk", "dep:derive_more", "derive_more?/display", "dep:temp-file", "dep:anyhow", "variables"]
 default = ["cli", "editor", "variables", "runner"]
 
