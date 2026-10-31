@@ -5,6 +5,7 @@ mod settings;
 mod arguments;
 mod regions;
 mod variables;
+mod hooks;
 
 pub fn has_attribute(contents: &str, attribute: &str) -> Res<bool> {
   settings::find_attribute(contents, attribute).map(|s: String| !s.is_empty())
@@ -21,5 +22,9 @@ pub fn run(contents: &str, hook: Option<&crate::preprocessor::prelude::Hook>) ->
   contents = arguments::process(&contents)?;
   contents = regions::process(&contents)?;
   contents = variables::process(&contents, &settings)?;
+  contents = hooks::load(&contents, &settings)?;
+  if let Some(hook) = hook {
+    contents = hooks::process(&contents, &settings, hook)?;
+  }
   Ok(contents)
 }

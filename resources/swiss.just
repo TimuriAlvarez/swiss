@@ -65,3 +65,6 @@ __swiss_vars_get(persist, signature, name, index) := (if index {
 [private]
 __swiss_hook_variable := []
 is_hook() := __swiss_hook_variable == []
+__swiss_hook(variable, book, entry) := (shelly('> swiss-hook' ++ quote(__swiss_signature ++ variable ++ book ++ entry)) \
+    || error('swiss-hook failed')) \
+    && __swiss_vars_get(false, __swiss_signature, variable, [])

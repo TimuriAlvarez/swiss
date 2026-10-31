@@ -11,6 +11,17 @@ fn regex_vars_trail(haystack: &str) -> Res<String> {
   editor::edit(&editor::Config::EXTRACT, haystack, &pattern, "$1", &["set", "swiss-vars", "persist", "as"], &[])
 }
 
+fn regex_hook_declarations(haystack: &str) -> Res<String> {
+  let pattern: String = format!(r#"^&1{BLANK}+&2{BLANK}+:={BLANK}+({EXPRESSION})(({BLANK}+&3{BLANK}+({EXPRESSION}))?)$"#);
+  let replacement: String = format!("$1{MARKER}$2\n");
+  editor::edit(&editor::Config::EXTRACT, haystack, &pattern, &replacement, &["set", "swiss-hook", "from"], &[])
+}
+
+fn regex_hook_trail(haystack: &str) -> Res<String> {
+  let pattern: String = format!(r#"^{BLANK}+&3{BLANK}+({EXPRESSION})$"#);
+  editor::edit(&editor::Config::EXTRACT, haystack, &pattern, "$1", &["set", "swiss-hook", "from"], &[])
+}
+
 fn regex_trim_trail(haystack: &str) -> Res<String> {
   let pattern: String = format!(r#"^['''|"""|'|"](.*?)['''|"""|'|"]$"#);
   editor::edit(&editor::Config::DEFAULT, haystack, &pattern, "$1", &[], &[])
@@ -51,6 +62,7 @@ pub fn find_attribute(contents: &str, attribute: &str) -> Res<String> {
 pub fn load(contents: &str) -> Res<Settings> {
   let settings: Settings = Settings {
     vars: load_entries(contents, regex_vars_declarations, regex_vars_trail, "variables' names")?,
+    hook: load_entries(contents, regex_hook_declarations, regex_hook_trail, "hooks")?,
   };
   Ok(settings)
 }

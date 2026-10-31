@@ -26,10 +26,11 @@ pub fn process_invalid_entries(message: &str, names: &Entry) -> Res {
 #[derive(Debug)]
 pub struct Settings {
   pub vars: Entries,
+  pub hook: Entries,
 }
 
 impl Settings {
-  pub const ALL: [&str; 1] = ["vars"];
+  pub const ALL: [&str; 2] = ["vars", "hook"];
 }
 
 #[derive(Debug)]
@@ -58,4 +59,7 @@ impl RegionLines {
 
 #[derive(Debug)]
 pub struct Hook {
+  pub signature: String,
+  pub variable: String,
+  pub entry: String,
 }
