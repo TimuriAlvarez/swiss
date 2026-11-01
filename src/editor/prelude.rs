@@ -32,3 +32,9 @@ impl<'a> ReBuilder<'a> {
     })
   }
 }
+
+#[derive(Debug)]
+pub struct Output {
+  pub is_dry: bool,
+  pub result: String,
+}

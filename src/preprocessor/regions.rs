@@ -23,13 +23,13 @@ fn select_separator_for(haystack: &str) -> Res<char> {
   anyhow::bail!("unable to pick a separator")
 }
 
-fn regex_regions(haystack: &str, region_begin: &str, region_end: &str, separator: char) -> Res<String> {
+fn regex_regions(haystack: &str, region_begin: &str, region_end: &str, separator: char) -> Res<Output> {
   let pattern: String = format!(r#"{BLANK}+(@{BLANK}*)?{region_begin}({ANY}|\n)*?{region_end}{ANY}*"#);
   let replacement: String = format!("$0{separator}");
   editor::edit(&editor::Config::EXTRACT, haystack, &pattern, &replacement, &[], &[])
 }
 
-fn regex_keyword_end(haystack: &str) -> Res<String> {
+fn regex_keyword_end(haystack: &str) -> Res<Output> {
   let pattern: String = format!(r#"^{ANY}*?\<(&1|&2)\>$"#);
   editor::edit(&editor::Config::EXTRACT, haystack, &pattern, "$1", &["then", "else"], &[])
 }
@@ -50,7 +50,7 @@ fn border_line(text: &str, default_border: &str) -> String {
 fn process_regions(haystack: &str, region_begin: &str, region_end: &str, separator: char, default_border: &str, canonize: impl Fn(&RegionLines) -> Vec<String>) -> Res<String> {
   let mut haystack: String = haystack.to_string();
   // Extract script regions from justfile
-  for region in regex_regions(&haystack, region_begin, region_end, separator)?.split(separator) {
+  for region in regex_regions(&haystack, region_begin, region_end, separator)?.result.split(separator) {
     // Split region into lines
     let mut rl: RegionLines = lines_from_region(region);
     let single_case: bool = rl.lines.len() == 1;
@@ -110,7 +110,7 @@ pub fn process(contents: &str) -> Res<String> {
       else {
         is_first = false;
         let terminator: &str = if line.is_rightmost { "" }
-        else if regex_keyword_end(&line.text).expect("regex failed").is_empty() { r"; \" }
+        else if regex_keyword_end(&line.text).expect("regex failed").result.is_empty() { r"; \" }
         else { r" \" };
         format!("{}{echo}{}{terminator}", line.indent, line.text)
       }

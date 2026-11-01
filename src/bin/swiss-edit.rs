@@ -10,7 +10,7 @@ pub struct CLI {
   /// Log level
   #[arg(long="log-level", default_value="info")]
   level: tracing::Level,
-  /// Enable matches extraction
+  /// Enable matches extraction mode
   #[arg(long, short='x')]
   extract: bool,
   /// If there is a file present when edition is requested, the operation is skipped
@@ -19,6 +19,9 @@ pub struct CLI {
   /// If the requested file is not present or it is empty, the operation is skipped
   #[arg(long)]
   skip_empty: bool,
+  /// If no matches were found proceed as usual
+  #[arg(long)]
+  allow_dry_run: bool,
   /// Write to the specified file ('-' for stdout)
   #[arg(long, short, allow_hyphen_values=true)]
   output: Option<String>,
@@ -55,13 +58,20 @@ fn main() -> gprl::types::Res {
   let config: swiss::editor::Config = swiss::editor::Config::default().extract(app.extract);
   let escape: Vec<&str> = app.escape.iter().map(String::as_str).collect();
   let shield: Vec<&str> = app.shield.iter().map(String::as_str).collect();
-  let contents: String = swiss::editor::edit(&config, &haystack, &app.pattern, &app.replacement, &escape, &shield)?;
+  let output: swiss::editor::Output = swiss::editor::edit(&config, &haystack, &app.pattern, &app.replacement, &escape, &shield)?;
+  let message: String = format!("No changes to the '{}' file were made", app.file);
+  if output.is_dry && !app.allow_dry_run {
+    anyhow::bail!(message)
+  }
+  let contents: String = output.result;
   let path: String = app.output.unwrap_or(app.file.clone());
   let overwrite_empty: bool = !app.skip_empty && haystack.is_empty() && contents.is_empty();
   if path == "-" {
     print!("{contents}");
   } else if path == app.file && haystack == contents && !overwrite_empty {
-    event!(Level::INFO, "No changes to the '{}' file were made", app.file);
+    if !app.allow_dry_run {
+      event!(Level::INFO, message);
+    }
   } else {
     gprl::fs::write_to_path(path, &contents)?;
   }

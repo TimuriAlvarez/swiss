@@ -1,17 +1,17 @@
 use super::prelude::*;
 
-fn regex_declarations(haystack: &str) -> Res<String> {
+fn regex_declarations(haystack: &str) -> Res<Output> {
   let pattern: String = format!(r"^({IDENT})\(({ANY}*{MARKER}{ANY}*)\)({BLANK}*:={BLANK}*{ANY}*)$");
   let replacement: String = format!("$1{MARKER}$2\n");
   editor::edit(&editor::Config::EXTRACT, haystack, &pattern, &replacement, &[], &[])
 }
 
-fn regex_value(haystack: &str) -> Res<String> {
+fn regex_value(haystack: &str) -> Res<Output> {
   let pattern: String = format!(r"^({EXPRESSION}){ANY}*$");
   editor::edit(&editor::Config::EXTRACT, haystack, &pattern, "$1", &[], &[])
 }
 
-fn regex_fill_out(haystack: &str, name: &str, argc: usize, value: &str) -> Res<String> {
+fn regex_fill_out(haystack: &str, name: &str, argc: usize, value: &str) -> Res<Output> {
   let sep: &str = if argc == 0 { "" } else { ", " };
   let argv: String = if argc == 0 { String::new() } else {
     // A pattern that matches either a quoted string (which may contain commas) or an unquoted non-comma sequence
@@ -22,7 +22,7 @@ fn regex_fill_out(haystack: &str, name: &str, argc: usize, value: &str) -> Res<S
   editor::edit(&editor::Config::DEFAULT, haystack, &pattern, &replacement, &[name], &[value])
 }
 
-fn regex_truncate(haystack: &str, name: &str, standard: &str) -> Res<String> {
+fn regex_truncate(haystack: &str, name: &str, standard: &str) -> Res<Output> {
   let pattern: String = format!(r"^\<(&1)\>\({ANY}*\)({BLANK}*:={BLANK}*{ANY}*)$");
   let replacement: String = format!("$1(&1)$2");
   editor::edit(&editor::Config::DEFAULT, haystack, &pattern, &replacement, &[name], &[standard])
@@ -31,7 +31,7 @@ fn regex_truncate(haystack: &str, name: &str, standard: &str) -> Res<String> {
 pub fn process(contents: &str) -> Res<String> {
   let mut haystack: String = contents.to_string();
   // Extract declarations for user defined functions from justfile
-  for declaration in regex_declarations(&haystack)?.lines() {
+  for declaration in regex_declarations(&haystack)?.result.lines() {
     // Get function name and it's extended arguments
     let marker: usize = declaration.find(MARKER).unwrap();
     let name: &str = &declaration[..marker];
@@ -43,20 +43,20 @@ pub fn process(contents: &str) -> Res<String> {
         // Split args into parts: left, right and an argument value
         let left: &str = &standard[..marker];
         let trail: &str = &standard[marker+1..];
-        let value: String = regex_value(trail)?;
+        let value: String = regex_value(trail)?.result;
         let right: &str = &trail[value.len()..];
         // Get the current number of optional arguments
         let argc: usize = left.matches(',').count();
         // Reconstruct args without the argument value
         standard = format!("{left}{right}");
         // Fill omitted values out
-        haystack = regex_fill_out(&haystack, name, argc, &value)?;
+        haystack = regex_fill_out(&haystack, name, argc, &value)?.result;
       } else {
         break
       };
     }
     // Make all declarations justfile-compatible
-    haystack = regex_truncate(&haystack, name, &standard)?;
+    haystack = regex_truncate(&haystack, name, &standard)?.result;
   }
   Ok(haystack)
 }

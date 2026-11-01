@@ -1,5 +1,5 @@
 pub use gprl::types::Res;
-pub use crate::editor;
+pub use crate::editor::{self, Output};
 
 pub const ANY: char = '.';
 pub const MARKER: char = '=';
@@ -65,7 +65,7 @@ pub struct Hook {
   pub entry: String,
 }
 
-pub fn regex_override_assignment(haystack: &str, assignment: &str, value: &str) -> Res<String> {
+pub fn regex_override_assignment(haystack: &str, assignment: &str, value: &str) -> Res<Output> {
   let pattern: String = format!(r"^(&{{1}}){BLANK}*:={BLANK}*(.*)$");
   editor::edit(&editor::Config::DEFAULT, haystack, &pattern, "${1} := '&{1}'", &[assignment], &[value])
 }

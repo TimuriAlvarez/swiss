@@ -3,7 +3,7 @@ use gprl::types::Res;
 fn test(c: &str, i: &str, b: bool, p: &str, r: &str, e: &[&str], s: &[&str]) -> Res {
   let haystack: String = std::fs::read_to_string(format!("./tests/data/{c}.txt"))?;
   let config: swiss::editor::Config = swiss::editor::Config::default().extract(b);
-  let result: String = swiss::editor::edit(&config, &haystack, p, r, e, s)?;
+  let result: String = swiss::editor::edit(&config, &haystack, p, r, e, s)?.result;
   let expected: String = std::fs::read_to_string(format!("./tests/data/{c}/{i}.txt"))?;
   assert_eq!(result, expected, "{i}");
   Ok(())

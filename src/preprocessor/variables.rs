@@ -1,6 +1,6 @@
 use super::prelude::*;
 
-fn regex_var_assignments(haystack: &str) -> Res<String> {
+fn regex_var_assignments(haystack: &str) -> Res<Output> {
   let pattern: String = format!(r#"({IDENT}){BLANK}*({OPERATOR})?:={BLANK}*\{{{BLANK}*({ANY}{ANY}*?){BLANK}*}}"#);
   let replacement: String = format!("$1\n");
   editor::edit(&editor::Config::EXTRACT, haystack, &pattern, &replacement, &[], &[])
@@ -14,7 +14,7 @@ fn unwrap_signature(signature: Option<&String>) -> String {
   }
 }
 
-fn regex_fill_assignments_out(haystack: &str, name: &str, signature: Option<&String>) -> Res<String> {
+fn regex_fill_assignments_out(haystack: &str, name: &str, signature: Option<&String>) -> Res<Output> {
   let persist: bool = signature.is_some();
   let signature: String = unwrap_signature(signature);
   let pattern: String = format!(r#"(&1){BLANK}*:={BLANK}*\{{{BLANK}*({ANY}{ANY}*?){BLANK}*}}"#);
@@ -22,7 +22,7 @@ fn regex_fill_assignments_out(haystack: &str, name: &str, signature: Option<&Str
   editor::edit(&editor::Config::DEFAULT, haystack, &pattern, &replacement, &[name], &[])
 }
 
-fn regex_fill_assignments_with_operators_out(haystack: &str, name: &str, signature: Option<&String>) -> Res<String> {
+fn regex_fill_assignments_with_operators_out(haystack: &str, name: &str, signature: Option<&String>) -> Res<Output> {
   let persist: bool = signature.is_some();
   let signature: String = unwrap_signature(signature);
   let pattern: String = format!(r#"(&1){BLANK}*({OPERATOR}):={BLANK}*\{{{BLANK}*({ANY}{ANY}*?){BLANK}*}}"#);
@@ -30,13 +30,13 @@ fn regex_fill_assignments_with_operators_out(haystack: &str, name: &str, signatu
   editor::edit(&editor::Config::DEFAULT, haystack, &pattern, &replacement, &[name], &[])
 }
 
-fn regex_var_calls(haystack: &str) -> Res<String> {
+fn regex_var_calls(haystack: &str) -> Res<Output> {
   let pattern: String = format!(r#"([^{CHAR}])var\(({IDENT})\)"#);
   let replacement: String = format!("$2\n");
   editor::edit(&editor::Config::EXTRACT, haystack, &pattern, &replacement, &[], &[])
 }
 
-fn regex_fill_calls_out(haystack: &str, name: &str, signature: Option<&String>) -> Res<String> {
+fn regex_fill_calls_out(haystack: &str, name: &str, signature: Option<&String>) -> Res<Output> {
   let persist: bool = signature.is_some();
   let signature: String = unwrap_signature(signature);
   let pattern: String = format!(r#"([^{CHAR}])var\((&1)\)"#);
@@ -48,22 +48,22 @@ pub fn process(contents: &str, settings: &Settings) -> Res<String> {
   let mut haystack: String = contents.to_string();
   let mut unresolved: Entry = Entry::new();
   // Extract assigned variables' names
-  let names: Entry = regex_var_assignments(&haystack)?.lines().map(|line: &str| line.to_owned()).collect();
+  let names: Entry = regex_var_assignments(&haystack)?.result.lines().map(|line: &str| line.to_owned()).collect();
   // Substitute variable's assignments
   for name in names {
     if let Some(signature) = settings.vars.get(&name) {
-      haystack = regex_fill_assignments_out(&haystack, &name, signature.as_ref())?;
-      haystack = regex_fill_assignments_with_operators_out(&haystack, &name, signature.as_ref())?;
+      haystack = regex_fill_assignments_out(&haystack, &name, signature.as_ref())?.result;
+      haystack = regex_fill_assignments_with_operators_out(&haystack, &name, signature.as_ref())?.result;
     } else {
       unresolved.insert(name);
     }
   }
   // Extract accessed variables' names
-  let names: Entry = regex_var_calls(&haystack)?.lines().map(|line: &str| line.to_owned()).collect();
+  let names: Entry = regex_var_calls(&haystack)?.result.lines().map(|line: &str| line.to_owned()).collect();
   // Substitute variable's access calls
   for name in names {
     if let Some(signature) = settings.vars.get(&name) {
-      haystack = regex_fill_calls_out(&haystack, &name, signature.as_ref())?;
+      haystack = regex_fill_calls_out(&haystack, &name, signature.as_ref())?.result;
     } else {
       unresolved.insert(name);
     }

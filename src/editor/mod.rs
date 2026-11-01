@@ -3,11 +3,12 @@ use gprl::types::Res;
 
 mod prelude;
 
-pub use prelude::Config;
+pub use prelude::{Config, Output};
 use prelude::ReBuilder;
 
-fn replace_all(config: &Config, re: &regex::Regex, haystack: &str, replace: impl Fn(&regex::Captures) -> Res<String>) -> Res<String> {
+fn replace_all(config: &Config, re: &regex::Regex, haystack: &str, replace: impl Fn(&regex::Captures) -> Res<String>) -> Res<Output> {
   // Initialize empty string, set the text cursor to the very beginning
+  let mut is_dry: bool = true;
   let mut result: String = String::new();
   let mut last_match: usize = 0;
   // Iterate over all captures
@@ -19,13 +20,15 @@ fn replace_all(config: &Config, re: &regex::Regex, haystack: &str, replace: impl
     result.push_str(&replace(&caps)?);
     // Set the text cursor after the match
     last_match = m.end();
+    // Clear dry flag
+    is_dry = false;
   }
   // If not extracting: preserve the original data after the last capture
   result.push_str(if config.extract { "" } else { &haystack[last_match..] });
-  Ok(result)
+  Ok(Output { is_dry, result })
 }
 
-fn expand_captures<'a>(re: &regex::Regex, escape: &str, haystack: &str, acquire: impl Fn(&str) -> &'a str, convert: impl Fn(&str) -> String) -> Res<String> {
+fn expand_captures<'a>(re: &regex::Regex, escape: &str, haystack: &str, acquire: impl Fn(&str) -> &'a str, convert: impl Fn(&str) -> String) -> Res<Output> {
   // Replace all occurrences of the reference pattern with the corresponding current capture
   replace_all(&Config::DEFAULT, re, haystack, |captures: &regex::Captures| -> Res<String> {
     // Fetch group's key
@@ -40,7 +43,7 @@ fn expand_captures<'a>(re: &regex::Regex, escape: &str, haystack: &str, acquire:
   })
 }
 
-fn expand_literals(haystack: &str, literals: &[&str], convert: impl Fn(&str) -> String) -> Res<String> {
+fn expand_literals(haystack: &str, literals: &[&str], convert: impl Fn(&str) -> String) -> Res<Output> {
   // Expand all references from haystack to the corresponding literal from `escape`
   expand_captures(&ReBuilder::GROUP_SHIELD, ReBuilder::ESCAPE_SHIELD, haystack, |key: &str| {
     let index: usize = key.parse::<usize>().expect("invalid index") - 1;
@@ -48,13 +51,13 @@ fn expand_literals(haystack: &str, literals: &[&str], convert: impl Fn(&str) -> 
   }, convert)
 }
 
-pub fn edit(config: &Config, haystack: &str, pattern: &str, replacement: &str, escape: &[&str], shield: &[&str]) -> Res<String> {
+pub fn edit(config: &Config, haystack: &str, pattern: &str, replacement: &str, escape: &[&str], shield: &[&str]) -> Res<Output> {
   // Unescape the replacement
   let replacement: String = replacement.to_unescaped().expect(&format!("Failed to unescape {replacement:?} string")).to_string();
   // Expand all references from the pattern to the corresponding literals from `escape`
-  let pattern: String = expand_literals(pattern, escape, regex::escape)?;
+  let pattern: String = expand_literals(pattern, escape, regex::escape)?.result;
   // Expand all references from the replacement to the corresponding literals from `shield`
-  let replacement: String = expand_literals(&replacement, shield, |literal: &str| literal.replace('$', "$$"))?;
+  let replacement: String = expand_literals(&replacement, shield, |literal: &str| literal.replace('$', "$$"))?.result;
   // Create a regular expression from the pattern
   let re: regex::Regex = ReBuilder::Pattern(&pattern).build()?;
   // Replace all occurrences of the pattern in the haystack with the replacement
@@ -63,6 +66,6 @@ pub fn edit(config: &Config, haystack: &str, pattern: &str, replacement: &str, e
     expand_captures(&ReBuilder::GROUP_REGEX, ReBuilder::ESCAPE_REGEX, &replacement, |key: &str| {
       if let Ok(index) = key.parse::<usize>() { &captures[index] }
       else { &captures[key] }
-    }, str::to_owned)
+    }, str::to_owned).map(|output: Output| output.result)
   })
 }

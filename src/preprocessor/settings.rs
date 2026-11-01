@@ -1,50 +1,50 @@
 use super::prelude::*;
 
-fn regex_vars_declarations(haystack: &str) -> Res<String> {
+fn regex_vars_declarations(haystack: &str) -> Res<Output> {
   let pattern: String = format!(r#"^&1{BLANK}+&2{BLANK}+:={BLANK}+({EXPRESSION})(({BLANK}+&3{BLANK}+&4{BLANK}+({EXPRESSION}))?)$"#);
   let replacement: String = format!("$1{MARKER}$2\n");
   editor::edit(&editor::Config::EXTRACT, haystack, &pattern, &replacement, &["set", "swiss-vars", "persist", "as"], &[])
 }
 
-fn regex_vars_trail(haystack: &str) -> Res<String> {
+fn regex_vars_trail(haystack: &str) -> Res<Output> {
   let pattern: String = format!(r#"^{BLANK}+&3{BLANK}+&4{BLANK}+({EXPRESSION})$"#);
   editor::edit(&editor::Config::EXTRACT, haystack, &pattern, "$1", &["set", "swiss-vars", "persist", "as"], &[])
 }
 
-fn regex_hook_declarations(haystack: &str) -> Res<String> {
+fn regex_hook_declarations(haystack: &str) -> Res<Output> {
   let pattern: String = format!(r#"^&1{BLANK}+&2{BLANK}+:={BLANK}+({EXPRESSION})(({BLANK}+&3{BLANK}+({EXPRESSION}))?)$"#);
   let replacement: String = format!("$1{MARKER}$2\n");
   editor::edit(&editor::Config::EXTRACT, haystack, &pattern, &replacement, &["set", "swiss-hook", "from"], &[])
 }
 
-fn regex_hook_trail(haystack: &str) -> Res<String> {
+fn regex_hook_trail(haystack: &str) -> Res<Output> {
   let pattern: String = format!(r#"^{BLANK}+&3{BLANK}+({EXPRESSION})$"#);
   editor::edit(&editor::Config::EXTRACT, haystack, &pattern, "$1", &["set", "swiss-hook", "from"], &[])
 }
 
-fn regex_trim_trail(haystack: &str) -> Res<String> {
+fn regex_trim_trail(haystack: &str) -> Res<Output> {
   let pattern: String = format!(r#"^['''|"""|'|"](.*?)['''|"""|'|"]$"#);
   editor::edit(&editor::Config::DEFAULT, haystack, &pattern, "$1", &[], &[])
 }
 
-fn load_entries(contents: &str, declarations: impl Fn(&str) -> Res<String>, trail: impl Fn(&str) -> Res<String>, name: &str) -> Res<Entries> {
+fn load_entries(contents: &str, declarations: impl Fn(&str) -> Res<Output>, trail: impl Fn(&str) -> Res<Output>, name: &str) -> Res<Entries> {
   let mut result: Entries = Entries::new();
   let mut duplicate: Entry = Entry::new();
   // Extract swiss settings for variables
-  for declaration in declarations(contents)?.lines() {
+  for declaration in declarations(contents)?.result.lines() {
     // Get identifiers
     let marker: usize = declaration.find(MARKER).unwrap();
     let left: &str = &declaration[..marker].trim_matches(|c: char| "[]".contains(c));
     let identifiers: Vec<&str> = left.split(",").map(|s: &str| s.trim()).collect();
     // Get trail
     let right: &str = &declaration[marker+1..];
-    let trail: String = trail(right)?;
+    let trail: String = trail(right)?.result;
     // Save variables and signatures to settings
     for identifier in identifiers {
       if result.contains_key(identifier) {
         duplicate.insert(identifier.to_owned());
       } else {
-        result.insert(identifier.to_owned(), if trail.is_empty() { None } else { Some(regex_trim_trail(&trail)?) });
+        result.insert(identifier.to_owned(), if trail.is_empty() { None } else { Some(regex_trim_trail(&trail)?.result) });
       }
     }
   }
@@ -52,7 +52,7 @@ fn load_entries(contents: &str, declarations: impl Fn(&str) -> Res<String>, trai
   Ok(result)
 }
 
-pub fn find_attribute(contents: &str, attribute: &str) -> Res<String> {
+pub fn find_attribute(contents: &str, attribute: &str) -> Res<Output> {
   let l_attr: String = format!(r"({ANY}+,{BLANK}*)+");
   let r_attr: String = format!(r"(,{BLANK}*{ANY}+)+");
   let pattern: String = format!(r"^\[({l_attr})?\<&1\>({r_attr})?\]?$");
@@ -71,11 +71,11 @@ pub fn load(contents: &str) -> Res<Settings> {
 pub fn process(contents: &str, settings: &Settings) -> Res<String> {
   let mut haystack: String = contents.to_string();
   // Override working directory
-  haystack = regex_override_assignment(&haystack, "set working-directory", &settings.cd)?;
+  haystack = regex_override_assignment(&haystack, "set working-directory", &settings.cd)?.result;
   // Comment every swiss setting out
   for setting in Settings::ALL {
     let pattern: String = format!(r"^set{BLANK}+&1&2{ANY}*?$");
-    haystack = editor::edit(&editor::Config::DEFAULT, &haystack, &pattern, "# $0", &["swiss-", setting], &[])?;
+    haystack = editor::edit(&editor::Config::DEFAULT, &haystack, &pattern, "# $0", &["swiss-", setting], &[])?.result;
   }
   Ok(haystack)
 }
