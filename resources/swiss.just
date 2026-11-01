@@ -35,6 +35,9 @@ lv(value) := replace(replace_regex(replace_regex(join_list(value),
 require(name) := fold(replace_regex(which(name) || '',
     '^.*/(?<name>.*)$', '$name'))
 
+# dependency
+dependency(name) := require(name) || error('missing dependency (' + name + ')')
+
 # signature
 [private]
 __swiss_signature := file_stem(justfile())
