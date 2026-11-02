@@ -8,7 +8,7 @@ pub const CHAR: &str = r"-|[[:word:]]";
 pub const IDENT: &str = r"(?:-|[[:word:]])+";
 pub const BLANK: &str = r"[[:blank:]]";
 pub const OPERATOR: &str = r"\+\+|\+|/";
-pub const EXPRESSION: &str = r#"\(.*\)|\[.*\]|"[^"]*"|'[^']*'|[^,\(\)\s]+"#;
+pub const EXPRESSION: &str = r#"(?:-|[[:word:]]*?)\(.*\)|\[.*\]|"[^"]*"|'[^']*'|[^,\(\)\s]+"#;
 
 pub const REGION_BEGIN_INTERPOL: &str = r"r#\{\{";
 pub const REGION_BEGIN_SCRIPT: &str = r"r#\$\$";
